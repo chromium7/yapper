@@ -13,16 +13,27 @@ class Following(models.Model):
     follow = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="followers")
 
+    def __str__(self):
+        return f"{self.user} is following {self.follow}"
+
 
 class Post(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="posts")
     text = models.CharField(max_length=300)
     time = models.DateTimeField(auto_now_add=True)
-    like = models.BooleanField(default=False)
-    like_count = models.IntegerField(default=0)
 
 
 class Reply(Post):
+    class Meta:
+        verbose_name_plural = "replies"
+
     post = models.ForeignKey(
         Post, on_delete=models.CASCADE, related_name="replies")
+
+
+class Like(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="likes")
+    post = models.ForeignKey(
+        Post, on_delete=models.CASCADE, related_name="likes")
