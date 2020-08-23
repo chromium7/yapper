@@ -10,48 +10,75 @@
 </head>
 
 <body>
+    <div class="page-container">
+        <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #333;">
+            <a class="navbar-brand" href="#">
+                <img src="{% static 'network/img/logo-white.png' %}" alt="">
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar"
+                aria-controls="navbar" aria-expanded="true" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand" href="#">
-            <img src="{% static 'network/img/logo-white.png' %}" alt="">
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor01"
-            aria-controls="navbarColor01" aria-expanded="true" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+            <div class="navbar-collapse collapse" id="navbar">
+                <ul class="navbar-nav mr-auto">
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><strong>{{ user.username }}</strong></a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'index' %}">All Posts</a>
+                    </li>
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Following</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">Log In</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'register' %}">Register</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </nav>
 
-        <div class="navbar-collapse collapse show" id="navbarColor01">
-            <ul class="navbar-nav mr-auto">
-                {% if user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="nav-link" href="#"><strong>{{ user.username }}</strong></a>
-                </li>
-                {% endif %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'index' %}">All Posts</a>
-                </li>
-                {% if user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Following</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
-                </li>
-                {% else %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'login' %}">Log In</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'register' %}">Register</a>
-                </li>
-                {% endif %}
-            </ul>
+        <div class="body">
+            {% block body %}
+            {% endblock %}
         </div>
-    </nav>
 
-    <div class="body">
-        {% block body %}
-        {% endblock %}
+        <div class="write-container">
+            <div class="write-form">
+                <h3>Post some yappies</h3>
+                <div class="row">
+                    <div class="col-2">
+                        <img src="#" alt="">
+                    </div>
+                    <div class="col-10">
+                        <form action="#">
+                            {% csrf_token %}
+                            <textarea id="write-post" class="form-control" cols="30" rows="5"
+                                placeholder="What's happening?"></textarea>
+                            <button id="write-submit" class="btn btn-secondary">Post</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <button id="write-toggle" class="btn btn-primary">Write a post</button>
+            </div>
+        </div>
+
+        <footer>
+            Copyright by bruh
+        </footer>
     </div>
 
     <script src="{% static 'network/script.js' %}"></script>

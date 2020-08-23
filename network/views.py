@@ -11,6 +11,18 @@ def index(request):
     return render(request, "network/index.html")
 
 
+def following(request):
+    return
+
+
+def post(request):
+    return
+
+
+def profile(request):
+    return
+
+
 def login_view(request):
     if request.method == "POST":
 
