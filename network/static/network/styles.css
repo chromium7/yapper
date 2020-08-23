@@ -1,6 +1,11 @@
+body {
+    background-color: #f36c3cfa;
+}
+
 .body {
     display: flex;
     flex-wrap: wrap;
+    min-height: 85vh;
 }
 
 .page-container {
@@ -13,6 +18,28 @@
     margin-right: 40px;
 }
 
+.category {
+    background-color: #333;
+    padding: 15px;
+}
+
+.category-btn {
+    display: block;
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+/* POST CONTAINER */
+
+.post-container {
+    padding: 15px;
+    background-color: #f36c3cfa;
+}
+
+
+
+/* FOOTER */
+
 footer {
     background-color: #333;
     color: #fff;
@@ -24,15 +51,8 @@ footer {
     line-height: 2.5rem;
 }
 
-.icon {
-    background-color: #e95420;
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 70px;
-    height: 60px;
-    border-radius: 20px 5px 0 5px;
-}
+
+/* WRITE CONTAINER */
 
 .write-container {
     position: absolute;
@@ -43,21 +63,24 @@ footer {
 }
 
 .write-form {
-    display: none;
+    visibility: hidden;
+    opacity: 0;
     position: relative;
     text-align: left;
-    background-color: #e95420;
+    background-color: #772953;
+    color: #fff;
     border-color: lightgrey;
     border-style: solid;
     border-width: 1px 1px 0 1px;
     border-radius: 5px 5px 0 5px;
     top: 1px;
     padding: 5px;
+    transition: all 0.5s linear;
 }
 
 #write-post {
-    background-color: #333;
-    color: #fff;
+    background-color: #fff;
+    color: #333;
 }
 
 #write-submit {
@@ -68,4 +91,6 @@ footer {
     border: 1px solid lightgrey;
     position: relative;
     z-index: 10;
+    width: 280px;
+    line-height: 1.3em;
 }

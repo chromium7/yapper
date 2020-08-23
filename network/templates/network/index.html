@@ -4,10 +4,16 @@
 
 
 {% block body %}
-<div class="col-md-3" style="background-color: #f36c3cfa;">
-
+<div class="category col-md-3">
+    <button class="category-btn btn btn-primary">All Posts</button>
+    {% if user.is_authenticated %}
+    <button class="category-btn btn btn-primary">Feeds</button>
+    <button class="category-btn btn btn-primary">Followings</button>
+    <button class="category-btn btn btn-primary">Followers</button>
+    <button class="category-btn btn btn-primary">Liked Posts</button>
+    {% endif %}
 </div>
-<div class="col-md-9 col-sm-12" style="background-color: cadetblue;">
+<div class="post-container col-md-9 col-sm-12">
     <h1>HEAD</h1>
 </div>
 {% endblock %}

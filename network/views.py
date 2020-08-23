@@ -15,11 +15,11 @@ def following(request):
     return
 
 
-def post(request):
+def post(request, post_id):
     return
 
 
-def profile(request):
+def profile(request, username):
     return
 
 

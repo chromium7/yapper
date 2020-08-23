@@ -23,6 +23,14 @@ class Post(models.Model):
     text = models.CharField(max_length=300)
     time = models.DateTimeField(auto_now_add=True)
 
+    def serialize(self):
+        return {
+            "id": self.id,
+            "user": self.user,
+            "text": self.text,
+            "time": self.time
+        }
+
 
 class Reply(Post):
     class Meta:

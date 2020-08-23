@@ -54,6 +54,7 @@
             {% endblock %}
         </div>
 
+        {% if user.is_authenticated %}
         <div class="write-container">
             <div class="write-form">
                 <h3>Post some yappies</h3>
@@ -62,7 +63,7 @@
                         <img src="#" alt="">
                     </div>
                     <div class="col-10">
-                        <form action="#">
+                        <form action="#" method="post">
                             {% csrf_token %}
                             <textarea id="write-post" class="form-control" cols="30" rows="5"
                                 placeholder="What's happening?"></textarea>
@@ -72,12 +73,14 @@
                 </div>
             </div>
             <div>
-                <button id="write-toggle" class="btn btn-primary">Write a post</button>
+                <button id="write-toggle" class="btn btn-dark">Write a post</button>
             </div>
         </div>
+        {% endif %}
 
         <footer>
-            Copyright by bruh
+            <b>yapper</b> (<i>plural</i> <b>yappers</b>): (<i>slang</i>) One's mouth, especially of a gossipy person.
+            (wiktionary.org)
         </footer>
     </div>
 
