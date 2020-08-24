@@ -1,22 +1,30 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from .models import User
+from .models import User, Following, Post, Reply, Like
 
 
 def index(request):
     return render(request, "network/index.html")
 
 
-def following(request):
+def follow(request, category):
     return
 
 
-def post(request, post_id):
-    return
+def posts(request, category):
+    if category == "all-posts":
+        posts = Post.objects.all()
+    elif category == "feeds":
+        pass
+    elif category == "liked":
+        pass
+    
+    posts = posts.order_by("-time")
+    return JsonResponse([post.serialize() for post in posts])
 
 
 def profile(request, username):

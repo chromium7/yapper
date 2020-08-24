@@ -4,7 +4,8 @@ from django.db import models
 
 class User(AbstractUser):
     profile_desc = models.CharField(max_length=300, blank=True, null=True)
-    profile_pic = models.ImageField(blank=True, null=True)
+    profile_pic = models.ImageField(
+        default="network/user-icon.png", upload_to="network/%Y/%m/%d/")
 
 
 class Following(models.Model):
@@ -26,7 +27,7 @@ class Post(models.Model):
     def serialize(self):
         return {
             "id": self.id,
-            "user": self.user,
+            "user": self.user.username,
             "text": self.text,
             "time": self.time
         }
