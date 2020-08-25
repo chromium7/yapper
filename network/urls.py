@@ -17,5 +17,6 @@ urlpatterns = [
     path("api/follow/<str:category>", views.follow, name="following"),
     path("api/posts/<str:category>", views.posts, name="post"),
     path("api/profile", views.profile, name="profile"),
+    path("api/write", views.write_post, name="write")
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

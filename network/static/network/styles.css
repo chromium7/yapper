@@ -53,7 +53,27 @@ body {
     background-color: #f36c3cfa;
 }
 
+.single-post-container {
+    padding: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    border: 0.5px solid grey;
+    background-color: #333;
+    color: #fff;
+}
 
+.user-pic {
+    padding: 5px;
+    border: 0.5px solid #fff;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    margin-top: 10px;
+}
+
+.post-time {
+    color: rgb(175, 175, 175);
+}
 
 /* FOOTER */
 

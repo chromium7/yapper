@@ -58,10 +58,10 @@
                         <img src="#" alt="">
                     </div>
                     <div class="col-10">
-                        <form action="#" method="post">
+                        <form id="write-form">
                             {% csrf_token %}
-                            <textarea id="write-post" class="form-control" cols="30" rows="5"
-                                placeholder="What's happening?"></textarea>
+                            <textarea id="write-post" class="form-control" name="post-text" cols="30" rows="5"
+                                placeholder="What's happening?" maxlength="300"></textarea>
                             <button id="write-submit" class="btn btn-secondary">Post</button>
                         </form>
                     </div>

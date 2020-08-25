@@ -28,15 +28,20 @@ class Post(models.Model):
         return {
             "id": self.id,
             "user": self.user.username,
+            "pic": str(self.user.profile_pic.url),
             "text": self.text,
             "time": self.time
         }
 
 
-class Reply(Post):
+class Reply(models.Model):
     class Meta:
         verbose_name_plural = "replies"
 
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="replies")
+    text = models.CharField(max_length=300)
+    time = models.DateTimeField(auto_now_add=True)
     post = models.ForeignKey(
         Post, on_delete=models.CASCADE, related_name="replies")
 

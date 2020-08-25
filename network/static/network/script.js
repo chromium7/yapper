@@ -5,8 +5,10 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelector("#feeds").addEventListener("click", () => loadPosts("feeds"));
     document.querySelector("#followings").addEventListener("click", () => loadFollow("followings"));
     document.querySelector("#followers").addEventListener("click", () => loadFollow("followers"));
-    document.querySelector("#liked-posts").addEventListener("click", loadPosts("liked"));
+    document.querySelector("#liked-posts").addEventListener("click", () => loadPosts("liked"));
     document.querySelector("#profile-details").addEventListener("click", loadProfileDetails);
+
+    loadPosts('all-posts');
 
 });
 
@@ -18,6 +20,52 @@ function loadPosts(category) {
     postView.style.display = "block";
     profileView.style.display = "none";
     followView.style.display = "none";
+
+    var header;
+    if (category === "all-posts") {
+        header = 'All Posts';
+    } else if (category === "feeds") {
+        header = 'Feeds';
+    } else {
+        header = 'Liked Posts';
+    }
+
+    // Get data about posts
+    fetch(`/api/posts/${category}`)
+        .then(response => response.json())
+        .then(posts => {
+            console.log(posts)
+
+            // Clear post view
+            postView.innerHTML = `<h2>${header}</h2>`;
+
+            if (posts.length === 0) {
+                var empty = document.createElement('div');
+                empty.innerHTML = `
+                    <h2>Very empty :(</h2>
+                `;
+                postView.appendChild(empty);
+                return
+            };
+
+            posts.forEach((post) => {
+                var dateTime = new Date(post.time);
+                var postContainer = document.createElement('div');
+                postContainer.className = 'single-post-container';
+                postContainer.innerHTML = `
+                    <div class="pic-container col-1">
+                        <img class="user-pic" src="${post.pic}" alt="" />
+                    </div>
+                    <div class="col-11">
+                        <h5>${post.user}</h5>
+                        <p>${post.text}</p>
+                        <small class="post-time">${dateTime}</small>
+                    </div>
+                `;
+                postView.appendChild(postContainer);
+
+            });
+        })
 }
 
 
@@ -51,4 +99,42 @@ function openWriteContainer() {
         writeToggle.style.borderRadius = "0.25rem";
         writeToggle.style.borderWidth = "1px";
     }
+
+
+    document.querySelector('#write-submit').addEventListener('click', () => {
+        event.preventDefault();
+        const text = document.querySelector('#write-post');
+
+        if (text.value) {
+            fetch('/api/write', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        text: text.value.trim(),
+                    })
+                })
+                .then(response => response.json())
+                .then(result => {
+                    console.log(result);
+
+                    text.value = "";
+
+                    loadPosts('all-posts');
+
+                    if (document.querySelector('#write-alert')) {
+                        document.querySelector('#write-alert').remove();
+                    }
+                });
+        } else {
+            if (!document.querySelector('#write-alert')) {
+                var alert = document.createElement('span');
+                alert.id = "write-alert";
+                alert.textContent = "Yappies cannot be empty!";
+                alert.style.color = "red";
+                document.querySelector('#write-form').appendChild(alert);
+            }
+            return
+        };
+
+
+    })
 }
