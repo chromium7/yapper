@@ -60,12 +60,22 @@ def write_post(request):
 
 
 def replies(request, post_id):
+    post = Post.objects.get(id=post_id)
     if request.method == "POST":
         # reply to a post
-        pass
+        data = json.loads(request.body)
+        user = request.user
+        text = data.get("text", "")
+
+        reply = Reply(user=user, text=text, post=post)
+        reply.save()
+        return JsonResponse({"message": "Post replied!"}, status=201)
+
     elif request.method == "GET":
-        # get replies for post
-        pass
+        replies = Reply.objects.filter(post=post)
+
+        replies = replies.order_by["-time"]
+        return JsonResponse([reply.serialize for reply in replies], safe=False)
 
 
 def login_view(request):

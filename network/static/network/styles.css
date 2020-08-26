@@ -61,6 +61,7 @@ body {
     border: 0.5px solid grey;
     background-color: #333;
     color: #fff;
+    min-height: 100px;
 }
 
 .user-pic {
@@ -88,6 +89,11 @@ body {
 
 .post-time {
     color: rgb(175, 175, 175);
+}
+
+.reply-form {
+    font-size: .8em;
+    margin: 10px 0 10px 80px;
 }
 
 /* FOOTER */

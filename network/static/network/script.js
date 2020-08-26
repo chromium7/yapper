@@ -51,6 +51,7 @@ function loadPosts(category) {
             posts.forEach((post) => {
                 var dateTime = new Date(post.time);
                 var postContainer = document.createElement('div');
+                postContainer.id = `container-${post.id}`
                 postContainer.className = 'single-post-container';
                 postContainer.innerHTML = `
                     <div class="pic-container col-1">
@@ -59,7 +60,7 @@ function loadPosts(category) {
                     <div class="col-11">
                         <h5 class="${post.user}-profile user-header">${post.user}</h5>
                         <p>${post.text}</p>
-                        <small class="reply-btn">Reply</small>
+                        <small class="reply-btn" id="reply-${post.id}">Reply</small>
                         <small class="post-time">${dateTime}</small>
                     </div>
                 `;
@@ -71,9 +72,8 @@ function loadPosts(category) {
                 profileLast.addEventListener('click', () => loadProfileDetails(post.user));
 
                 // bind reply button
-                var reply = document.querySelectorAll('.reply-btn');
-                var replyLast = reply[reply.length - 1];
-                replyLast.addEventListener('click', () => openReplyContainer(post.id));
+                var reply = document.querySelector(`#reply-${post.id}`);
+                reply.addEventListener('click', () => openReplyContainer(post.id));
 
                 // show replies preview if there are any
 
@@ -97,7 +97,59 @@ function loadProfileDetails(username) {
 
 
 function openReplyContainer(id) {
-    return
+
+    var postContainer = document.querySelector(`#container-${id}`);
+    var postReply = document.querySelector(`#reply-${id}`);
+
+    if (document.querySelector('.reply-form')) {
+        var existingForm = document.querySelector('.reply-form');
+        var oldId = existingForm.id.split('-')[2];
+        if (oldId == id) {
+            postReply.textContent = "Reply";
+            existingForm.remove();
+            return
+        } else {
+            document.querySelector(`#reply-${oldId}`).textContent = "Reply";
+            existingForm.remove();
+        }
+    }
+    postReply.textContent = "Hide";
+    var replyForm = document.createElement('div');
+    replyForm.id = `reply-form-${id}`;
+    replyForm.className = 'reply-form';
+    replyForm.innerHTML = `
+    <textarea id='reply-text' class='form-control' cols='70' rows='2' maxlength='300' placeholder='Enter reply here'></textarea>
+    <button id='reply-btn' class='reply-btn'>Reply</button>
+    `;
+    postContainer.appendChild(replyForm);
+
+    document.querySelector('#reply-btn').addEventListener('click', () => {
+        const replyText = document.querySelector('#reply-text');
+
+        if (replyText.value) {
+            fetch(`/api/replies/${id}`, {
+                    method: "POST",
+                    body: JSON.stringify({
+                        text: replyText.value.trim()
+                    })
+                })
+                .then(response => response.json())
+                .then(result => {
+                    console.log(result);
+
+                    replyForm.remove()
+                })
+        } else {
+            replyText.style.border = "2px solid red";
+            replyText.focus();
+            var replyAlert = document.createElement('span');
+            replyAlert.id = 'reply-alert';
+            replyAlert.textContent = "Reply cannot be empty";
+            replyAlert.style.color = "red";
+            replyForm.appendChild(replyAlert);
+            return
+        }
+    })
 }
 
 
