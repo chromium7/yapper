@@ -59,6 +59,15 @@ def write_post(request):
     return JsonResponse({"message": "Email sent successfully"}, status=201)
 
 
+def replies(request, post_id):
+    if request.method == "POST":
+        # reply to a post
+        pass
+    elif request.method == "GET":
+        # get replies for post
+        pass
+
+
 def login_view(request):
     if request.method == "POST":
 

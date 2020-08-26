@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelector("#followings").addEventListener("click", () => loadFollow("followings"));
     document.querySelector("#followers").addEventListener("click", () => loadFollow("followers"));
     document.querySelector("#liked-posts").addEventListener("click", () => loadPosts("liked"));
-    document.querySelector("#profile-details").addEventListener("click", loadProfileDetails);
+    document.querySelector("#profile-details").addEventListener("click", () => loadProfileDetails());
 
     loadPosts('all-posts');
 
@@ -57,12 +57,25 @@ function loadPosts(category) {
                         <img class="user-pic" src="${post.pic}" alt="" />
                     </div>
                     <div class="col-11">
-                        <h5>${post.user}</h5>
+                        <h5 class="${post.user}-profile user-header">${post.user}</h5>
                         <p>${post.text}</p>
+                        <small class="reply-btn">Reply</small>
                         <small class="post-time">${dateTime}</small>
                     </div>
                 `;
                 postView.appendChild(postContainer);
+
+                // bind user profile link to username
+                var profile = document.querySelectorAll(`.${post.user}-profile`);
+                var profileLast = profile[profile.length - 1];
+                profileLast.addEventListener('click', () => loadProfileDetails(post.user));
+
+                // bind reply button
+                var reply = document.querySelectorAll('.reply-btn');
+                var replyLast = reply[reply.length - 1];
+                replyLast.addEventListener('click', () => openReplyContainer(post.id));
+
+                // show replies preview if there are any
 
             });
         })
@@ -76,11 +89,17 @@ function loadFollow(category) {
 }
 
 
-function loadProfileDetails() {
+function loadProfileDetails(username) {
     postView.style.display = "none";
     profileView.style.display = "block";
     followView.style.display = "none";
 }
+
+
+function openReplyContainer(id) {
+    return
+}
+
 
 function openWriteContainer() {
     const writeContainer = document.querySelector(".write-form");

@@ -1,9 +1,10 @@
-from django.test import Client, TestCase
+from django.test import Client, TestCase, tag
 from django.contrib import auth
 from .models import *
 
 
 # Testing login form
+@tag('login')
 class AccountTestCase(TestCase):
 
     def setUp(self):
@@ -45,8 +46,21 @@ class AccountTestCase(TestCase):
 
 # Test
 
-
+@tag('model')
 class ModelTestCase(TestCase):
 
     def setUp(self):
         pass
+
+@tag('view')
+class ViewTestCase(TestCase):
+
+    def setUp(self):
+        pass
+
+@tag('script')
+class ScriptTestCase(TestCase):
+
+    def setUp(self):
+        pass
+    

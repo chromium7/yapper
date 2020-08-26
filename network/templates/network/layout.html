@@ -49,6 +49,11 @@
             {% endblock %}
         </div>
 
+        <footer>
+            <b>yapper</b> (<i>plural</i> <b>yappers</b>): (<i>slang</i>) One's mouth, especially of a gossipy person.
+            (wiktionary.org)
+        </footer>
+
         {% if user.is_authenticated %}
         <div class="write-container">
             <div class="write-form">
@@ -68,15 +73,10 @@
                 </div>
             </div>
             <div>
-                <button id="write-toggle" class="btn btn-dark">Write a post</button>
+                <button id="write-toggle" class="btn btn-info">Write a post</button>
             </div>
         </div>
         {% endif %}
-
-        <footer>
-            <b>yapper</b> (<i>plural</i> <b>yappers</b>): (<i>slang</i>) One's mouth, especially of a gossipy person.
-            (wiktionary.org)
-        </footer>
     </div>
 
     <script src="{% static 'network/script.js' %}"></script>

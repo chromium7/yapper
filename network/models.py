@@ -45,6 +45,15 @@ class Reply(models.Model):
     post = models.ForeignKey(
         Post, on_delete=models.CASCADE, related_name="replies")
 
+    def serialize(self):
+        return {
+            "id": self.id,
+            "user": self.user.username,
+            "pic": str(self.user.profile_pic.url),
+            "text": self.text,
+            "time": self.time
+        }
+
 
 class Like(models.Model):
     user = models.ForeignKey(
