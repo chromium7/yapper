@@ -8,15 +8,19 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelector("#liked-posts").addEventListener("click", () => loadPosts("liked"));
     document.querySelector("#profile-details").addEventListener("click", () => loadProfileDetails());
 
+    // Load all posts as initial page
     loadPosts('all-posts');
 
 });
 
+// Set up views
 const postView = document.querySelector("#post-view");
 const profileView = document.querySelector("#profile-view");
 const followView = document.querySelector("#follow-view");
 
+
 function loadPosts(category) {
+    // Show correct the view
     postView.style.display = "block";
     profileView.style.display = "none";
     followView.style.display = "none";
@@ -47,6 +51,7 @@ function loadPosts(category) {
                 return
             };
 
+            // Create a post container for each post
             posts.forEach((post) => {
                 var dateTime = new Date(post.time);
                 var postContainer = document.createElement('div');
@@ -59,55 +64,51 @@ function loadPosts(category) {
                     <div class="col-11">
                         <h5 class="${post.user}-profile user-header">${post.user}</h5>
                         <p>${post.text}</p>
-                        <small class="reply-btn" id="reply-${post.id}">Reply</small>
+                        <small class="reply-btn" id="reply-${post.id}">Comment</small>
                         <small class="post-time">${dateTime}</small>
                     </div>
                 `;
                 postView.appendChild(postContainer);
 
-                // bind user profile link to username
+                // Bind user profile link to username
                 var profile = document.querySelectorAll(`.${post.user}-profile`);
                 var profileLast = profile[profile.length - 1];
                 profileLast.addEventListener('click', () => loadProfileDetails(post.user));
 
-                // bind reply button
+                // Bind reply button
                 var reply = document.querySelector(`#reply-${post.id}`);
-                reply.addEventListener('click', () => openReplyContainer(post.id));
+                reply.addEventListener('click', () => openReplyContainer(post.id, category));
 
-                // show replies preview if there are any
+                // Show replies preview if there is any
                 fetch(`api/replies/${post.id}`)
                     .then(response => response.json())
                     .then(replies => {
+                        // If no replies, return immediately
                         if (replies.length === 0) {
                             return
-                        } else if (replies.length > 1) {
-                            var showMoreButton = `
-                            <div>
-                                <small class="show-more-btn">Show more replies</small>
-                            </div>
-                            `
-                        } else {
-                            var showMoreButton = "";
                         };
 
-                        const replyPreview = replies[0];
-                        const replyPreviewTime = new Date(replyPreview.time)
-                        var replyPreviewContainer = document.createElement("div");
-                        replyPreviewContainer.id = `reply-container-${post.id}`;
-                        replyPreviewContainer.innerHTML = `
-                        <div class="reply-container">
-                            <div class="reply-bullet"> > </div>
-                            <div>
-                                <span class="user-header">${replyPreview.user}</span> replied on 
-                                <small class="post-time">${replyPreviewTime}:</small>
-                                <div>${replyPreview.text}</div>
-                                ${showMoreButton}
-                            </div>
-                        </div>
-                    `;
+                        // Create show button
+                        var showComments = document.createElement('small');
+                        showComments.id = `show-more-${post.id}`;
+                        showComments.className = 'show-more-btn';
+                        showComments.textContent = 'Show comments';
+                        reply.parentNode.insertBefore(showComments, reply.nextSibling);
 
-                        postContainer.parentNode.insertBefore(replyPreviewContainer, postContainer.nextSibling);
-
+                        // Bind functions
+                        var replyContainer = document.createElement('div');
+                        showComments.addEventListener('click', () => {
+                            if (showComments.textContent === "Show comments") {
+                                showComments.textContent = "Hide comments";
+                                replies.forEach(reply => {
+                                    postContainer.parentNode.insertBefore(replyContainer, postContainer.nextSibling);
+                                    displayComments(reply, replyContainer);
+                                })
+                            } else {
+                                showComments.textContent = "Show comments";
+                                replyContainer.innerHTML = "";
+                            }
+                        })
                     });
             });
         })
@@ -127,12 +128,48 @@ function loadProfileDetails(username) {
     followView.style.display = "none";
 }
 
+function displayComments(comment, parentContainer, preview = false) {
+    // If preview comment, add show more button
+    if (preview === true) {
+        var showMoreButton = `
+        <div>
+            <small id="show-more-${comment.id}" class="show-more-btn">Show more comments</small>
+        </div>
+        `
+    } else {
+        var showMoreButton = "";
+    };
+    const time = new Date(comment.time);
+    const commentContainer = document.createElement("div");
+    commentContainer.id = `reply-container-${comment.id}`;
+    commentContainer.innerHTML = `
+        <div class="reply-container">
+            <div class="reply-bullet"> > </div>
+            <div>
+                <span class="${comment.user}-profile user-header">${comment.user}</span> 
+                replied on 
+                <small class="post-time">${time}:</small>
+                <div>${comment.text}</div>
+                ${showMoreButton}
+            </div>
+        </div>
+    `;
 
-function openReplyContainer(id) {
+    parentContainer.appendChild(commentContainer);
+
+    // Bind functions
+    profile = document.querySelectorAll(`.${comment.user}-profile`);
+    profileLast = profile[profile.length - 1];
+    profileLast.addEventListener('click', () => loadProfileDetails(comment.user));
+}
+
+
+function openReplyContainer(id, category) {
 
     var postContainer = document.querySelector(`#container-${id}`);
     var postReply = document.querySelector(`#reply-${id}`);
 
+    // Close reply container if opened
     if (document.querySelector('.reply-form')) {
         var existingForm = document.querySelector('.reply-form');
         var oldId = existingForm.id.split('-')[2];
@@ -145,7 +182,11 @@ function openReplyContainer(id) {
             existingForm.remove();
         }
     }
+
+    // Change value to hide
     postReply.textContent = "Hide";
+
+    // Reply form area
     var replyForm = document.createElement('div');
     replyForm.id = `reply-form-${id}`;
     replyForm.className = 'reply-form';
@@ -155,10 +196,12 @@ function openReplyContainer(id) {
     `;
     postContainer.appendChild(replyForm);
 
+    // Bind function
     document.querySelector('#reply-btn').addEventListener('click', () => {
         const replyText = document.querySelector('#reply-text');
 
         if (replyText.value) {
+            // Send post request if text is not empty
             fetch(`/api/replies/${id}`, {
                     method: "POST",
                     body: JSON.stringify({
@@ -170,8 +213,10 @@ function openReplyContainer(id) {
                     console.log(result);
 
                     replyForm.remove()
+                    loadPosts(category);
                 })
         } else {
+            // Show alert if text is empty
             replyText.style.border = "2px solid red";
             replyText.focus();
             var replyAlert = document.createElement('span');
@@ -203,12 +248,13 @@ function openWriteContainer() {
         writeToggle.style.borderWidth = "1px";
     }
 
-
+    // Bind functions
     document.querySelector('#write-submit').addEventListener('click', () => {
         event.preventDefault();
         const text = document.querySelector('#write-post');
 
         if (text.value) {
+            // Send post request if text is not empty
             fetch('/api/write', {
                     method: 'POST',
                     body: JSON.stringify({
@@ -228,6 +274,7 @@ function openWriteContainer() {
                     }
                 });
         } else {
+            // Show alert if there is not an alert yet
             if (!document.querySelector('#write-alert')) {
                 var alert = document.createElement('span');
                 alert.id = "write-alert";
@@ -237,6 +284,7 @@ function openWriteContainer() {
             }
             return
         };
+        // Prevent multiple posts
         event.stopImmediatePropagation()
     })
 }

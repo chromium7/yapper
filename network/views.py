@@ -70,12 +70,11 @@ def replies(request, post_id):
 
         reply = Reply(user=user, text=text, post=post)
         reply.save()
-        return JsonResponse({"message": "Post replied!"}, status=201)
+        return JsonResponse(reply.serialize(), status=201)
 
     elif request.method == "GET":
         post_replies = Reply.objects.filter(post=post)
 
-        post_replies = post_replies.order_by("-time")
         return JsonResponse([reply.serialize() for reply in post_replies], safe=False)
 
 
