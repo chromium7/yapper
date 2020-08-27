@@ -34,7 +34,6 @@ function loadPosts(category) {
     fetch(`/api/posts/${category}`)
         .then(response => response.json())
         .then(posts => {
-            console.log(posts)
 
             // Clear post view
             postView.innerHTML = `<h2>${header}</h2>`;
@@ -76,7 +75,40 @@ function loadPosts(category) {
                 reply.addEventListener('click', () => openReplyContainer(post.id));
 
                 // show replies preview if there are any
+                fetch(`api/replies/${post.id}`)
+                    .then(response => response.json())
+                    .then(replies => {
+                        if (replies.length === 0) {
+                            return
+                        } else if (replies.length > 1) {
+                            var showMoreButton = `
+                            <div>
+                                <small class="show-more-btn">Show more replies</small>
+                            </div>
+                            `
+                        } else {
+                            var showMoreButton = "";
+                        };
 
+                        const replyPreview = replies[0];
+                        const replyPreviewTime = new Date(replyPreview.time)
+                        var replyPreviewContainer = document.createElement("div");
+                        replyPreviewContainer.id = `reply-container-${post.id}`;
+                        replyPreviewContainer.innerHTML = `
+                        <div class="reply-container">
+                            <div class="reply-bullet"> > </div>
+                            <div>
+                                <span class="user-header">${replyPreview.user}</span> replied on 
+                                <small class="post-time">${replyPreviewTime}:</small>
+                                <div>${replyPreview.text}</div>
+                                ${showMoreButton}
+                            </div>
+                        </div>
+                    `;
+
+                        postContainer.parentNode.insertBefore(replyPreviewContainer, postContainer.nextSibling);
+
+                    });
             });
         })
 }
@@ -205,7 +237,6 @@ function openWriteContainer() {
             }
             return
         };
-
-
+        event.stopImmediatePropagation()
     })
 }

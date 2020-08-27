@@ -3,7 +3,7 @@ from django.db import models
 
 
 class User(AbstractUser):
-    profile_desc = models.CharField(max_length=300, blank=True, null=True)
+    profile_desc = models.CharField(max_length=300, blank=True)
     profile_pic = models.ImageField(
         default="network/user-icon.png", upload_to="network/%Y/%m/%d/")
 
@@ -38,6 +38,7 @@ class Reply(models.Model):
     class Meta:
         verbose_name_plural = "replies"
 
+    id = models.AutoField(primary_key=True)
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="replies")
     text = models.CharField(max_length=300)

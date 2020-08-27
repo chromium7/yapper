@@ -59,6 +59,7 @@ def write_post(request):
     return JsonResponse({"message": "Email sent successfully"}, status=201)
 
 
+@csrf_exempt
 def replies(request, post_id):
     post = Post.objects.get(id=post_id)
     if request.method == "POST":
@@ -72,10 +73,10 @@ def replies(request, post_id):
         return JsonResponse({"message": "Post replied!"}, status=201)
 
     elif request.method == "GET":
-        replies = Reply.objects.filter(post=post)
+        post_replies = Reply.objects.filter(post=post)
 
-        replies = replies.order_by["-time"]
-        return JsonResponse([reply.serialize for reply in replies], safe=False)
+        post_replies = post_replies.order_by("-time")
+        return JsonResponse([reply.serialize() for reply in post_replies], safe=False)
 
 
 def login_view(request):

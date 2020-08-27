@@ -78,7 +78,8 @@ body {
     cursor: pointer;
 }
 
-.reply-btn {
+.reply-btn,
+.show-more-btn {
     background-color: #17a2b8;
     border: #17a2b8;
     border-radius: 10%;
@@ -95,6 +96,23 @@ body {
     font-size: .8em;
     margin: 10px 0 10px 80px;
 }
+
+.reply-container {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 8px;
+    border: 0.5px solid grey;
+    background-color: #333;
+    color: #fff;
+    font-size: .9em;
+}
+
+.reply-bullet {
+    width: 100px;
+    text-align: center;
+    font-size: 1.5em;
+}
+
 
 /* FOOTER */
 
