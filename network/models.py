@@ -61,3 +61,8 @@ class Like(models.Model):
         User, on_delete=models.CASCADE, related_name="likes")
     post = models.ForeignKey(
         Post, on_delete=models.CASCADE, related_name="likes")
+
+    def serialize(self):
+        return {
+            "post": self.post.id
+        }

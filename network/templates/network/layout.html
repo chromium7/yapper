@@ -30,7 +30,7 @@
                         <a id="profile-details" class="nav-link" href="#"><strong>{{ user.username }}</strong></a>
                     </li>
                     <li class="nav-item">
-                        <img id="profile-pic" src="{{ user.profile_pic.url }}" alt="as">
+                        <img class="profile-pic" src="{{ user.profile_pic.url }}" alt="">
                     </li>
                     {% else %}
                     <li class="nav-item">
@@ -59,13 +59,13 @@
             <div class="write-form">
                 <h3>Post some yappies</h3>
                 <div class="row">
-                    <div class="col-2">
-                        <img src="#" alt="">
+                    <div class="col-2 write-pic">
+                        <img class="profile-pic" src="{{ user.profile_pic.url }}" alt="">
                     </div>
                     <div class="col-10">
                         <form id="write-form">
                             {% csrf_token %}
-                            <textarea id="write-post" class="form-control" name="post-text" cols="30" rows="5"
+                            <textarea id="write-post" class="form-control" name="post-text" cols="30" rows="4"
                                 placeholder="What's happening?" maxlength="300"></textarea>
                             <button id="write-submit" class="btn btn-secondary">Post</button>
                         </form>

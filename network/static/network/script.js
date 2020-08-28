@@ -38,6 +38,10 @@ function loadPosts(category) {
     fetch(`/api/posts/${category}`)
         .then(response => response.json())
         .then(posts => {
+            var likes = posts[0];
+            var posts = posts[1];
+            // console.log(likes);
+            // console.log(posts);
 
             // Clear post view
             postView.innerHTML = `<h2>${header}</h2>`;
@@ -54,6 +58,14 @@ function loadPosts(category) {
             // Create a post container for each post
             posts.forEach((post) => {
                 var dateTime = new Date(post.time);
+
+                // Determine wether the post is liked or not
+                var heartFill = 'none';
+                likes.forEach((like) => {
+                    if (like.post === post.id) {
+                        heartFill = '#ff0000';
+                    }
+                });
                 var postContainer = document.createElement('div');
                 postContainer.id = `container-${post.id}`
                 postContainer.className = 'single-post-container';
@@ -64,6 +76,10 @@ function loadPosts(category) {
                     <div class="col-11">
                         <h5 class="${post.user}-profile user-header">${post.user}</h5>
                         <p>${post.text}</p>
+                        <svg id="heart-${post.id}" class="heart" fill="#000000" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="20px" height="20px">
+                            <path fill=${heartFill} stroke="#ffffff" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" 
+                            d="M35,8c-4.176,0-7.851,2.136-10,5.373C22.851,10.136,19.176,8,15,8C8.373,8,3,13.373,3,20c0,14,16,21,22,26c6-5,22-12,22-26C47,13.373,41.627,8,35,8z"/>
+                        </svg>
                         <small class="reply-btn" id="reply-${post.id}">Comment</small>
                         <small class="post-time">${dateTime}</small>
                     </div>
@@ -74,6 +90,10 @@ function loadPosts(category) {
                 var profile = document.querySelectorAll(`.${post.user}-profile`);
                 var profileLast = profile[profile.length - 1];
                 profileLast.addEventListener('click', () => loadProfileDetails(post.user));
+
+                // Bind heart button 
+                var heart = document.querySelector(`#heart-${post.id}`);
+                heart.addEventListener('click', event => heartPost(event, post.id));
 
                 // Bind reply button
                 var reply = document.querySelector(`#reply-${post.id}`);
@@ -128,6 +148,24 @@ function loadProfileDetails(username) {
     followView.style.display = "none";
 }
 
+function heartPost(event, id) {
+    fetch(`api/heart/${id}`, {
+            method: "PUT"
+        })
+        .then(response => response.json())
+        .then(result => {
+            // Change the heart icon fill
+            if (result.message === "liked") {
+                const target = event.target.childNodes;
+                target[1].style.fill = "#ff0000";
+            } else {
+                const target = event.target;
+                target.style.fill = "None"
+            }
+        });
+}
+
+
 function displayComments(comment, parentContainer, preview = false) {
     // If preview comment, add show more button
     if (preview === true) {
@@ -147,7 +185,7 @@ function displayComments(comment, parentContainer, preview = false) {
             <div class="reply-bullet"> > </div>
             <div>
                 <span class="${comment.user}-profile user-header">${comment.user}</span> 
-                replied on 
+                commented on 
                 <small class="post-time">${time}:</small>
                 <div>${comment.text}</div>
                 ${showMoreButton}
@@ -174,11 +212,11 @@ function openReplyContainer(id, category) {
         var existingForm = document.querySelector('.reply-form');
         var oldId = existingForm.id.split('-')[2];
         if (oldId == id) {
-            postReply.textContent = "Reply";
+            postReply.textContent = "Comment";
             existingForm.remove();
             return
         } else {
-            document.querySelector(`#reply-${oldId}`).textContent = "Reply";
+            document.querySelector(`#reply-${oldId}`).textContent = "Comment";
             existingForm.remove();
         }
     }
@@ -192,7 +230,7 @@ function openReplyContainer(id, category) {
     replyForm.className = 'reply-form';
     replyForm.innerHTML = `
     <textarea id='reply-text' class='form-control' cols='70' rows='2' maxlength='300' placeholder='Enter reply here'></textarea>
-    <button id='reply-btn' class='reply-btn'>Reply</button>
+    <button id='reply-btn' class='reply-btn'>Comment</button>
     `;
     postContainer.appendChild(replyForm);
 
@@ -221,7 +259,7 @@ function openReplyContainer(id, category) {
             replyText.focus();
             var replyAlert = document.createElement('span');
             replyAlert.id = 'reply-alert';
-            replyAlert.textContent = "Reply cannot be empty";
+            replyAlert.textContent = "Comment cannot be empty";
             replyAlert.style.color = "red";
             replyForm.appendChild(replyAlert);
             return

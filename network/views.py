@@ -23,6 +23,8 @@ def posts(request, category):
     current_user = request.user
     if category == "all-posts":
         posts = Post.objects.all()
+        if posts:
+            posts = posts.order_by("-time")
     elif category == "feeds":
         posts = []
         user_followings = current_user.followings.all()
@@ -33,9 +35,27 @@ def posts(request, category):
         liked = current_user.likes.all()
         posts = [like.post for like in liked]
 
-    if posts:
-        posts = posts.order_by("-time")
-    return JsonResponse([post.serialize() for post in posts], safe=False)
+    liked = Like.objects.filter(user=request.user)
+    return JsonResponse([[like.serialize() for like in liked], [post.serialize() for post in posts]], safe=False)
+
+
+@csrf_exempt
+def heart(request, post_id):
+
+    if request.method != "PUT":
+        return JsonResponse({
+            "error": "PUT request required"
+        }, status=400)
+    current_user = request.user
+    post = Post.objects.get(pk=post_id)
+    try:
+        like_object = Like.objects.get(user=current_user, post=post)
+        like_object.delete()
+        return JsonResponse({"message": "unliked"}, status=201)
+    except Like.DoesNotExist:
+        like_object = Like(user=current_user, post=post)
+        like_object.save()
+        return JsonResponse({"message": "liked"}, status=201)
 
 
 def profile(request, username):
