@@ -8,7 +8,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
-from .models import User, Following, Post, Reply, Like
+from .models import User, Following, Post, Reply
 
 
 def index(request):
@@ -32,11 +32,9 @@ def posts(request, category):
             for followed_user in user_followings:
                 posts += followed_user.posts
     elif category == "liked":
-        liked = current_user.likes.all()
-        posts = [like.post for like in liked]
+        posts = current_user.likes.all()
 
-    liked = Like.objects.filter(user=request.user)
-    return JsonResponse([[like.serialize() for like in liked], [post.serialize() for post in posts]], safe=False)
+    return JsonResponse([post.serialize() for post in posts], safe=False)
 
 
 @csrf_exempt
@@ -48,14 +46,13 @@ def heart(request, post_id):
         }, status=400)
     current_user = request.user
     post = Post.objects.get(pk=post_id)
-    try:
-        like_object = Like.objects.get(user=current_user, post=post)
-        like_object.delete()
-        return JsonResponse({"message": "unliked"}, status=201)
-    except Like.DoesNotExist:
-        like_object = Like(user=current_user, post=post)
-        like_object.save()
-        return JsonResponse({"message": "liked"}, status=201)
+
+    if current_user in post.like.all():
+        post.like.remove(current_user)
+        return JsonResponse({"message": "unliked", "count": len(post.like.all())}, status=201)
+    else:
+        post.like.add(current_user)
+        return JsonResponse({"message": "liked", "count": len(post.like.all())}, status=201)
 
 
 def profile(request, username):

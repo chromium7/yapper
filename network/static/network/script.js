@@ -38,9 +38,6 @@ function loadPosts(category) {
     fetch(`/api/posts/${category}`)
         .then(response => response.json())
         .then(posts => {
-            var likes = posts[0];
-            var posts = posts[1];
-            // console.log(likes);
             // console.log(posts);
 
             // Clear post view
@@ -59,15 +56,17 @@ function loadPosts(category) {
             posts.forEach((post) => {
                 var dateTime = new Date(post.time);
 
+                // console.log(post.likes);
+
                 // Determine wether the post is liked or not
                 var heartFill = 'none';
-                likes.forEach((like) => {
-                    if (like.post === post.id) {
+                post.likes.forEach((like) => {
+                    if (like === currentUser) {
                         heartFill = '#ff0000';
                     }
                 });
                 var postContainer = document.createElement('div');
-                postContainer.id = `container-${post.id}`
+                postContainer.id = `container-${post.id}`;
                 postContainer.className = 'single-post-container';
                 postContainer.innerHTML = `
                     <div class="pic-container col-1">
@@ -80,6 +79,7 @@ function loadPosts(category) {
                             <path fill=${heartFill} stroke="#ffffff" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" 
                             d="M35,8c-4.176,0-7.851,2.136-10,5.373C22.851,10.136,19.176,8,15,8C8.373,8,3,13.373,3,20c0,14,16,21,22,26c6-5,22-12,22-26C47,13.373,41.627,8,35,8z"/>
                         </svg>
+                        <small id="heart-count-${post.id}">${post.likes.length}</small>
                         <small class="reply-btn" id="reply-${post.id}">Comment</small>
                         <small class="post-time">${dateTime}</small>
                     </div>
@@ -160,8 +160,9 @@ function heartPost(event, id) {
                 target[1].style.fill = "#ff0000";
             } else {
                 const target = event.target;
-                target.style.fill = "None"
+                target.style.fill = "None";
             }
+            document.querySelector(`#heart-count-${id}`).textContent = result.count;
         });
 }
 

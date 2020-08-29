@@ -23,6 +23,7 @@ class Post(models.Model):
         User, on_delete=models.CASCADE, related_name="posts")
     text = models.CharField(max_length=300)
     time = models.DateTimeField(auto_now_add=True)
+    like = models.ManyToManyField(User, related_name="likes", blank=True)
 
     def serialize(self):
         return {
@@ -30,6 +31,7 @@ class Post(models.Model):
             "user": self.user.username,
             "pic": str(self.user.profile_pic.url),
             "text": self.text,
+            "likes": [user.username for user in self.like.all()],
             "time": self.time
         }
 
@@ -53,16 +55,4 @@ class Reply(models.Model):
             "pic": str(self.user.profile_pic.url),
             "text": self.text,
             "time": self.time
-        }
-
-
-class Like(models.Model):
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="likes")
-    post = models.ForeignKey(
-        Post, on_delete=models.CASCADE, related_name="likes")
-
-    def serialize(self):
-        return {
-            "post": self.post.id
         }
