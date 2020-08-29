@@ -55,6 +55,25 @@ def heart(request, post_id):
         return JsonResponse({"message": "liked", "count": len(post.like.all())}, status=201)
 
 
+@csrf_exempt
+def edit(request, post_id):
+    post = Post.objects.get(pk=post_id)
+
+    if request.method == "PUT":
+        post.delete()
+        return JsonResponse({"message": "Post deleted"}, status=201)
+    elif request.method == "POST":
+        data = json.loads(request.body)
+        text = data.get("text", "")
+
+        post.text = text
+        post.save()
+
+        return JsonResponse({"message": "Post successfully edited"}, status=201)
+    else:
+        return JsonResponse({"error": "POST request required"}, status=400)
+
+
 def profile(request, username):
     return
 
@@ -73,7 +92,7 @@ def write_post(request):
     post = Post(user=user, text=text)
     post.save()
 
-    return JsonResponse({"message": "Email sent successfully"}, status=201)
+    return JsonResponse({"message": "Created new Yappies successfully"}, status=201)
 
 
 @csrf_exempt

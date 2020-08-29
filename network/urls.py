@@ -18,6 +18,7 @@ urlpatterns = [
     path("api/posts/<str:category>", views.posts, name="post"),
     path("api/replies/<int:post_id>", views.replies, name="replies"),
     path("api/profile/<str:username>", views.profile, name="profile"),
+    path("api/edit/<int:post_id>", views.edit, name="edit"),
     path("api/heart/<int:post_id>", views.heart, name="heart"),
     path("api/write", views.write_post, name="write"),
 

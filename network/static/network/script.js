@@ -65,6 +65,17 @@ function loadPosts(category) {
                         heartFill = '#ff0000';
                     }
                 });
+
+                // Edit button
+                var editButton;
+                if (currentUser === post.user) {
+                    editButton = `
+                        <button class="edit-btn" id="edit-${post.id}">Edit</button>
+                    `;
+                } else {
+                    editButton = "";
+                }
+
                 var postContainer = document.createElement('div');
                 postContainer.id = `container-${post.id}`;
                 postContainer.className = 'single-post-container';
@@ -74,7 +85,9 @@ function loadPosts(category) {
                     </div>
                     <div class="col-11">
                         <h5 class="${post.user}-profile user-header">${post.user}</h5>
-                        <p>${post.text}</p>
+                        <div id="text-${post.id}">
+                            <p>${post.text}</p>
+                        </div>
                         <svg id="heart-${post.id}" class="heart" fill="#000000" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="20px" height="20px">
                             <path fill=${heartFill} stroke="#ffffff" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" 
                             d="M35,8c-4.176,0-7.851,2.136-10,5.373C22.851,10.136,19.176,8,15,8C8.373,8,3,13.373,3,20c0,14,16,21,22,26c6-5,22-12,22-26C47,13.373,41.627,8,35,8z"/>
@@ -83,6 +96,7 @@ function loadPosts(category) {
                         <small class="reply-btn" id="reply-${post.id}">Comment</small>
                         <small class="post-time">${dateTime}</small>
                     </div>
+                    ${editButton}
                 `;
                 postView.appendChild(postContainer);
 
@@ -98,6 +112,12 @@ function loadPosts(category) {
                 // Bind reply button
                 var reply = document.querySelector(`#reply-${post.id}`);
                 reply.addEventListener('click', () => openReplyContainer(post.id, category));
+
+                // Bind edit button if exist
+                if (document.querySelector(`#edit-${post.id}`)) {
+                    document.querySelector(`#edit-${post.id}`).addEventListener('click', () => editPost(post.id, post.text));
+                };
+
 
                 // Show replies preview if there is any
                 fetch(`api/replies/${post.id}`)
@@ -147,6 +167,73 @@ function loadProfileDetails(username) {
     profileView.style.display = "block";
     followView.style.display = "none";
 }
+
+
+function editPost(id, text) {
+    const editButton = document.querySelector(`#edit-${id}`);
+    const textContainer = document.querySelector(`#text-${id}`);
+
+    if (editButton.textContent === "Edit") {
+        editButton.textContent = "Cancel";
+        textContainer.innerHTML = "";
+
+        const textArea = document.createElement('textarea');
+        textArea.textContent = text;
+        textArea.className = "edit-area";
+        textArea.rows = 3;
+        textContainer.appendChild(textArea);
+
+        const confirmButton = document.createElement('button');
+        confirmButton.className = "confirm-btn";
+        confirmButton.textContent = "Edit";
+        textContainer.appendChild(confirmButton);
+
+        const deleteButton = document.createElement('button');
+        deleteButton.className = "delete-btn";
+        deleteButton.textContent = "Remove post";
+        textContainer.appendChild(deleteButton);
+
+
+        // Bind function
+        confirmButton.addEventListener('click', () => {
+            fetch(`/api/edit/${id}`, {
+                    method: "POST",
+                    body: JSON.stringify({
+                        text: textArea.value.trim()
+                    })
+                })
+                .then(response => response.json())
+                .then(result => {
+                    console.log(result);
+
+                    editButton.textContent = "Edit";
+                    textContainer.innerHTML = `
+                    <p>${textArea.value.trim()}</p>
+                    `;
+
+                })
+        });
+
+        deleteButton.addEventListener('click', () => {
+            fetch(`/api/edit/${id}`, {
+                    method: "PUT"
+                })
+                .then(
+                    textContainer.parentNode.parentNode.remove()
+                )
+        });
+
+    } else {
+        editButton.textContent = "Edit";
+        textContainer.innerHTML = `
+        <p>${text}</p>
+        `;
+    }
+
+
+}
+
+
 
 function heartPost(event, id) {
     fetch(`api/heart/${id}`, {
