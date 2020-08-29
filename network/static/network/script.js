@@ -151,6 +151,47 @@ function loadPosts(category) {
                         })
                     });
             });
+
+            // Pagination 
+
+            var pagination = document.createElement('nav');
+            pagination.className = "pagination-container";
+            pagination.ariaLabel = "Posts navigation";
+            var paginationList = document.createElement('ul');
+            paginationList.className = "pagination justify-content-center";
+            var paginationPrevious = document.createElement('li');
+            paginationPrevious.className = "page-item disabled";
+            paginationPrevious.innerHTML = `
+                <a class="page-link" href="#" aria-disabled="true">Previous</a>
+            `;
+
+            pagination.appendChild(paginationList);
+            paginationList.appendChild(paginationPrevious);
+
+            // Available pages
+            var pageCount = 0;
+            for (var i = 0; i < posts.length; i = i + 10) {
+                pageCount++;
+                var paginationItem = document.createElement('li');
+                paginationItem.className = "page-item";
+                paginationItem.innerHTML = `
+                    <a class="page-link" href="#">${pageCount}</a>
+                `;
+                paginationList.appendChild(paginationItem);
+            };
+
+            var paginationNext = document.createElement('li');
+            if (pageCount > 1) {
+                paginationNext.className = "page-item";
+            } else {
+                paginationNext.className = "page-item disabled";
+            };
+            paginationNext.innerHTML = `
+                <a class="page-link" href="#">Next</a>
+            `;
+            paginationList.appendChild(paginationNext);
+
+            postView.appendChild(pagination);
         })
 }
 
@@ -183,11 +224,13 @@ function editPost(id, text) {
         textArea.rows = 3;
         textContainer.appendChild(textArea);
 
+        // Confirm edit button
         const confirmButton = document.createElement('button');
         confirmButton.className = "confirm-btn";
         confirmButton.textContent = "Edit";
         textContainer.appendChild(confirmButton);
 
+        // Delete post button
         const deleteButton = document.createElement('button');
         deleteButton.className = "delete-btn";
         deleteButton.textContent = "Remove post";
@@ -229,10 +272,7 @@ function editPost(id, text) {
         <p>${text}</p>
         `;
     }
-
-
 }
-
 
 
 function heartPost(event, id) {
@@ -361,15 +401,12 @@ function openWriteContainer() {
     const writeToggle = document.querySelector("#write-toggle");
 
     // Show container and hide container
-    if (writeContainer.style.visibility === "hidden" |
-        writeContainer.style.visibility == "") {
-        writeContainer.style.visibility = "visible";
-        writeContainer.style.opacity = "1";
+    if (writeContainer.style.display === "none" | writeContainer.style.display === "") {
+        writeContainer.style.display = "block";
         writeToggle.style.borderRadius = "0 0 0.25rem 0.25rem";
         writeToggle.style.borderWidth = "0 1px 1px 1px";
     } else {
-        writeContainer.style.visibility = "hidden";
-        writeContainer.style.opacity = "0";
+        writeContainer.style.display = "none";
         writeToggle.style.borderRadius = "0.25rem";
         writeToggle.style.borderWidth = "1px";
     }

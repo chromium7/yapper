@@ -139,6 +139,11 @@ body {
     cursor: pointer;
 }
 
+/* PAGINATION */
+.pagination-container {
+    margin-top: 10px;
+}
+
 
 /* FOOTER */
 
@@ -165,8 +170,7 @@ footer {
 }
 
 .write-form {
-    visibility: hidden;
-    opacity: 0;
+    display: none;
     position: relative;
     text-align: left;
     background-color: #17a2b8;
@@ -177,7 +181,6 @@ footer {
     border-radius: 5px 5px 0 5px;
     top: 1px;
     padding: 5px;
-    transition: all 0.5s linear;
 }
 
 .write-pic {
