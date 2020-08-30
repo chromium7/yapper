@@ -7,6 +7,7 @@ from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
+from django.core.paginator import Paginator
 
 from .models import User, Following, Post, Reply
 
@@ -15,16 +16,26 @@ def index(request):
     return render(request, "network/index.html")
 
 
+def profile(request, username):
+    user = User.objects.get(username=username)
+    if request.method == "POST":
+        return
+    elif request.method == "GET":
+        return JsonResponse(user.serialize(), safe=False)
+
+
 def follow(request, category):
     return
 
 
 def posts(request, category):
+    page = request.GET.get("page", "")
+
     current_user = request.user
+
     if category == "all-posts":
         posts = Post.objects.all()
-        if posts:
-            posts = posts.order_by("-time")
+
     elif category == "feeds":
         posts = []
         user_followings = current_user.followings.all()
@@ -34,6 +45,14 @@ def posts(request, category):
     elif category == "liked":
         posts = current_user.likes.all()
 
+    if posts:
+        posts = posts.order_by("-time")
+        if page:
+            posts = Paginator(posts, 10)
+            posts = posts.page(page)
+            previous = posts.has_previous()
+            next = posts.has_next()
+            return JsonResponse([[post.serialize() for post in posts], {"previous": previous, "next": next}], safe=False)
     return JsonResponse([post.serialize() for post in posts], safe=False)
 
 
@@ -72,10 +91,6 @@ def edit(request, post_id):
         return JsonResponse({"message": "Post successfully edited"}, status=201)
     else:
         return JsonResponse({"error": "POST request required"}, status=400)
-
-
-def profile(request, username):
-    return
 
 
 @csrf_exempt

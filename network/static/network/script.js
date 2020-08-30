@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelector("#followings").addEventListener("click", () => loadFollow("followings"));
     document.querySelector("#followers").addEventListener("click", () => loadFollow("followers"));
     document.querySelector("#liked-posts").addEventListener("click", () => loadPosts("liked"));
-    document.querySelector("#profile-details").addEventListener("click", () => loadProfileDetails());
+    document.querySelector("#profile-details").addEventListener("click", () => loadProfileDetails(currentUser));
 
     // Load all posts as initial page
     loadPosts('all-posts');
@@ -17,28 +17,26 @@ document.addEventListener('DOMContentLoaded', function () {
 const postView = document.querySelector("#post-view");
 const profileView = document.querySelector("#profile-view");
 const followView = document.querySelector("#follow-view");
-
+const paginatorCont = document.querySelector('#paginator-container');
 
 function loadPosts(category) {
     // Show correct the view
     postView.style.display = "block";
     profileView.style.display = "none";
     followView.style.display = "none";
+    paginatorCont.innerHTML = "";
 
-    var header;
-    if (category === "all-posts") {
-        header = 'All Posts';
-    } else if (category === "feeds") {
-        header = 'Feeds';
-    } else {
-        header = 'Liked Posts';
-    }
-
-    // Get data about posts
     fetch(`/api/posts/${category}`)
         .then(response => response.json())
         .then(posts => {
-            // console.log(posts);
+            var header;
+            if (category === "all-posts") {
+                header = 'All Posts';
+            } else if (category === "feeds") {
+                header = 'Feeds';
+            } else {
+                header = 'Liked Posts';
+            }
 
             // Clear post view
             postView.innerHTML = `<h2>${header}</h2>`;
@@ -52,11 +50,196 @@ function loadPosts(category) {
                 return
             };
 
+            // Pagination
+            var pagination = document.createElement('nav');
+            pagination.className = "pagination-container";
+            pagination.ariaLabel = "Posts navigation";
+            var paginationList = document.createElement('ul');
+            paginationList.className = "pagination justify-content-center";
+            var paginationPrevious = document.createElement('li');
+            paginationPrevious.id = "page-previous";
+            paginationPrevious.className = "page-item disabled";
+            paginationPrevious.innerHTML = `
+                <a class="page-link" href="#">Previous</a>
+            `;
+
+            pagination.appendChild(paginationList);
+            paginationList.appendChild(paginationPrevious);
+
+            // Available pages
+            var pageCount = 0;
+            for (var i = 0; i < posts.length; i = i + 10) {
+                pageCount++;
+                const paginationItem = document.createElement('li');
+                const page = pageCount;
+                paginationItem.className = "page-item";
+                paginationItem.innerHTML = `
+                    <a class="page-link" href="#">${pageCount}</a>
+                `;
+                paginationList.appendChild(paginationItem);
+                paginationItem.addEventListener('click', () => {
+                    showPaginatorPage(category, page);
+                    currentPage = page;
+                });
+            };
+
+            var paginationNext = document.createElement('li');
+            paginationNext.id = "page-next";
+            if (pageCount > 1) {
+                paginationNext.className = "page-item";
+            } else {
+                paginationNext.className = "page-item disabled";
+            };
+            paginationNext.innerHTML = `
+                <a class="page-link" href="#">Next</a>
+            `;
+            paginationList.appendChild(paginationNext);
+
+            // Show first page by default
+            showPaginatorPage(category, 1);
+
+            paginatorCont.appendChild(pagination);
+        });
+}
+
+
+function loadFollow(category) {
+    postView.style.display = "none";
+    profileView.style.display = "none";
+    followView.style.display = "block";
+}
+
+
+function loadProfileDetails(username) {
+    postView.style.display = "none";
+    profileView.style.display = "block";
+    followView.style.display = "none";
+    paginatorCont.innerHTML = "";
+
+    fetch(`/api/profile/${username}`)
+        .then(response => response.json())
+        .then(user => {
+            // console.log(user);
+
+            // Reset the profile view
+            profileView.innerHTML = "";
+
+            var profileContainer = document.createElement('div');
+            profileContainer.className = "profile-container";
+            profileContainer.style.background = `#333 url(${profileBg}) no-repeat`;
+            profileContainer.style.backgroundSize = '100% 100%';
+
+            var profilePic = document.createElement('div');
+            profilePic.className = 'profile-img';
+            profilePic.innerHTML = `
+                <img src=${user.pic} class="profile-pic-big" />
+            `;
+            profileContainer.appendChild(profilePic);
+
+            var profileDetails = document.createElement('div');
+            profileDetails.className = "profile-details";
+            profileDetails.innerHTML = `
+                <div id="profile-name">
+                    <h3>${user.name}</h3>
+                </div>
+                <div id="profile-email">
+                    <h4>${user.email}</h4>
+                </div>
+                <div id="profile-desc">
+                    <p>${user.desc}</p>
+                </div>
+            `;
+            profileContainer.appendChild(profileDetails);
+
+            if (user.name === currentUser) {
+                var editProfile = document.createElement('button');
+                editProfile.className = "edit-btn";
+                editProfile.textContent = "Edit Profile";
+                profileContainer.appendChild(editProfile);
+            }
+
+            profileView.appendChild(profileContainer);
+        });
+}
+
+
+function editProfile(username) {
+    var profileName, profileEmail, profileDesc, profileImg, editButton, profileDetails;
+    profileName = document.querySelector('#profile-name');
+    profileEmail = document.querySelector('#profile-email');
+    profileDesc = document.querySelector('#profile-desc');
+    profileImg = document.querySelector('#profile-img');
+    editButton = document.querySelector('.edit-btn');
+    profileDetails = profileName.parentNode;
+
+    if (editButton.textContent === "Edit") {
+        editButton.textContent = "Hide";
+
+
+        // Confirm edit button
+        const confirmButton = document.createElement('button');
+        confirmButton.className = "confirm-btn";
+        confirmButton.textContent = "Edit";
+
+        // Delete post button
+        const deleteButton = document.createElement('button');
+        deleteButton.className = "delete-btn";
+        deleteButton.textContent = "Remove post";
+
+        return
+    } else {
+        editButton.textContent = "Edit";
+
+    }
+}
+
+
+function showPaginatorPage(category, page) {
+
+    var header;
+    if (category === "all-posts") {
+        header = 'All Posts';
+    } else if (category === "feeds") {
+        header = 'Feeds';
+    } else {
+        header = 'Liked Posts';
+    }
+
+    fetch(`api/posts/${category}?page=${page}`)
+        .then(response => response.json())
+        .then(posts => {
+            var status = posts[1];
+            posts = posts[0];
+
+            // Update previous and next pagination button functionality
+            var paginationNext = document.querySelector("#page-next");
+            var paginationPrevious = document.querySelector("#page-previous");
+            if (status.next === true) {
+                paginationNext.className = "page-item";
+                paginationNext.addEventListener("click", () => showPaginatorPage(category, page + 1));
+            } else {
+                paginationNext.className = "page-item disabled";
+                // Remove event listener
+                var new_element = paginationNext.cloneNode(true);
+                paginationNext.parentNode.replaceChild(new_element, paginationNext);
+            }
+
+            if (status.previous === true) {
+                paginationPrevious.className = "page-item";
+                paginationPrevious.addEventListener("click", () => showPaginatorPage(category, page - 1));
+            } else {
+                paginationPrevious.className = "page-item disabled";
+                // Remove event listener
+                var new_element = paginationPrevious.cloneNode(true);
+                paginationPrevious.parentNode.replaceChild(new_element, paginationPrevious);
+            }
+
+            // Clear post view
+            postView.innerHTML = `<h2>${header}</h2>`;
+
             // Create a post container for each post
             posts.forEach((post) => {
                 var dateTime = new Date(post.time);
-
-                // console.log(post.likes);
 
                 // Determine wether the post is liked or not
                 var heartFill = 'none';
@@ -70,8 +253,8 @@ function loadPosts(category) {
                 var editButton;
                 if (currentUser === post.user) {
                     editButton = `
-                        <button class="edit-btn" id="edit-${post.id}">Edit</button>
-                    `;
+                <button class="edit-btn" id="edit-${post.id}">Edit</button>
+            `;
                 } else {
                     editButton = "";
                 }
@@ -80,24 +263,24 @@ function loadPosts(category) {
                 postContainer.id = `container-${post.id}`;
                 postContainer.className = 'single-post-container';
                 postContainer.innerHTML = `
-                    <div class="pic-container col-1">
-                        <img class="user-pic" src="${post.pic}" alt="" />
-                    </div>
-                    <div class="col-11">
-                        <h5 class="${post.user}-profile user-header">${post.user}</h5>
-                        <div id="text-${post.id}">
-                            <p>${post.text}</p>
-                        </div>
-                        <svg id="heart-${post.id}" class="heart" fill="#000000" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="20px" height="20px">
-                            <path fill=${heartFill} stroke="#ffffff" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" 
-                            d="M35,8c-4.176,0-7.851,2.136-10,5.373C22.851,10.136,19.176,8,15,8C8.373,8,3,13.373,3,20c0,14,16,21,22,26c6-5,22-12,22-26C47,13.373,41.627,8,35,8z"/>
-                        </svg>
-                        <small id="heart-count-${post.id}">${post.likes.length}</small>
-                        <small class="reply-btn" id="reply-${post.id}">Comment</small>
-                        <small class="post-time">${dateTime}</small>
-                    </div>
-                    ${editButton}
-                `;
+            <div class="pic-container col-1">
+                <img class="user-pic" src="${post.pic}" alt="" />
+            </div>
+            <div class="col-11">
+                <h5 class="${post.user}-profile user-header">${post.user}</h5>
+                <div id="text-${post.id}">
+                    <p>${post.text}</p>
+                </div>
+                <svg id="heart-${post.id}" class="heart" fill="#000000" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="20px" height="20px">
+                    <path fill=${heartFill} stroke="#ffffff" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" 
+                    d="M35,8c-4.176,0-7.851,2.136-10,5.373C22.851,10.136,19.176,8,15,8C8.373,8,3,13.373,3,20c0,14,16,21,22,26c6-5,22-12,22-26C47,13.373,41.627,8,35,8z"/>
+                </svg>
+                <small id="heart-count-${post.id}">${post.likes.length}</small>
+                <small class="reply-btn" id="reply-${post.id}">Comment</small>
+                <small class="post-time">${dateTime}</small>
+            </div>
+            ${editButton}
+        `;
                 postView.appendChild(postContainer);
 
                 // Bind user profile link to username
@@ -151,62 +334,7 @@ function loadPosts(category) {
                         })
                     });
             });
-
-            // Pagination 
-
-            var pagination = document.createElement('nav');
-            pagination.className = "pagination-container";
-            pagination.ariaLabel = "Posts navigation";
-            var paginationList = document.createElement('ul');
-            paginationList.className = "pagination justify-content-center";
-            var paginationPrevious = document.createElement('li');
-            paginationPrevious.className = "page-item disabled";
-            paginationPrevious.innerHTML = `
-                <a class="page-link" href="#" aria-disabled="true">Previous</a>
-            `;
-
-            pagination.appendChild(paginationList);
-            paginationList.appendChild(paginationPrevious);
-
-            // Available pages
-            var pageCount = 0;
-            for (var i = 0; i < posts.length; i = i + 10) {
-                pageCount++;
-                var paginationItem = document.createElement('li');
-                paginationItem.className = "page-item";
-                paginationItem.innerHTML = `
-                    <a class="page-link" href="#">${pageCount}</a>
-                `;
-                paginationList.appendChild(paginationItem);
-            };
-
-            var paginationNext = document.createElement('li');
-            if (pageCount > 1) {
-                paginationNext.className = "page-item";
-            } else {
-                paginationNext.className = "page-item disabled";
-            };
-            paginationNext.innerHTML = `
-                <a class="page-link" href="#">Next</a>
-            `;
-            paginationList.appendChild(paginationNext);
-
-            postView.appendChild(pagination);
         })
-}
-
-
-function loadFollow(category) {
-    postView.style.display = "none";
-    profileView.style.display = "none";
-    followView.style.display = "block";
-}
-
-
-function loadProfileDetails(username) {
-    postView.style.display = "none";
-    profileView.style.display = "block";
-    followView.style.display = "none";
 }
 
 
@@ -294,17 +422,7 @@ function heartPost(event, id) {
 }
 
 
-function displayComments(comment, parentContainer, preview = false) {
-    // If preview comment, add show more button
-    if (preview === true) {
-        var showMoreButton = `
-        <div>
-            <small id="show-more-${comment.id}" class="show-more-btn">Show more comments</small>
-        </div>
-        `
-    } else {
-        var showMoreButton = "";
-    };
+function displayComments(comment, parentContainer) {
     const time = new Date(comment.time);
     const commentContainer = document.createElement("div");
     commentContainer.id = `reply-container-${comment.id}`;
@@ -316,7 +434,6 @@ function displayComments(comment, parentContainer, preview = false) {
                 commented on 
                 <small class="post-time">${time}:</small>
                 <div>${comment.text}</div>
-                ${showMoreButton}
             </div>
         </div>
     `;

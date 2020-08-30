@@ -7,6 +7,14 @@ class User(AbstractUser):
     profile_pic = models.ImageField(
         default="network/user-icon.png", upload_to="network/%Y/%m/%d/")
 
+    def serialize(self):
+        return {
+            "name": self.username,
+            "email": self.email,
+            "pic": str(self.profile_pic.url),
+            "desc": self.profile_desc,
+        }
+
 
 class Following(models.Model):
     user = models.ForeignKey(
