@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
 
     document.querySelector("#write-toggle").onclick = openWriteContainer;
+    document.querySelector('.navbar-brand').addEventListener("click", () => loadPosts("all-posts"));
     document.querySelector("#all-posts").addEventListener("click", () => loadPosts("all-posts"));
     document.querySelector("#feeds").addEventListener("click", () => loadPosts("feeds"));
     document.querySelector("#followings").addEventListener("click", () => loadFollow("followings"));
@@ -26,20 +27,21 @@ function loadPosts(category) {
     followView.style.display = "none";
     paginatorCont.innerHTML = "";
 
+    var header;
+    if (category === "all-posts") {
+        header = 'All Posts';
+    } else if (category === "feeds") {
+        header = 'Feeds';
+    } else {
+        header = 'Liked Posts';
+    }
+
+    // Clear post view
+    postView.innerHTML = `<h2>${header}</h2>`;
+
     fetch(`/api/posts/${category}`)
         .then(response => response.json())
         .then(posts => {
-            var header;
-            if (category === "all-posts") {
-                header = 'All Posts';
-            } else if (category === "feeds") {
-                header = 'Feeds';
-            } else {
-                header = 'Liked Posts';
-            }
-
-            // Clear post view
-            postView.innerHTML = `<h2>${header}</h2>`;
 
             if (posts.length === 0) {
                 var empty = document.createElement('div');
@@ -116,13 +118,13 @@ function loadProfileDetails(username) {
     followView.style.display = "none";
     paginatorCont.innerHTML = "";
 
+    // Reset the profile view
+    profileView.innerHTML = "";
+
     fetch(`/api/profile/${username}`)
         .then(response => response.json())
         .then(user => {
             // console.log(user);
-
-            // Reset the profile view
-            profileView.innerHTML = "";
 
             var profileContainer = document.createElement('div');
             profileContainer.className = "profile-container";
@@ -130,7 +132,7 @@ function loadProfileDetails(username) {
             profileContainer.style.backgroundSize = '100% 100%';
 
             var profilePic = document.createElement('div');
-            profilePic.className = 'profile-img';
+            profilePic.id = 'profile-img';
             profilePic.innerHTML = `
                 <img src=${user.pic} class="profile-pic-big" />
             `;
@@ -145,51 +147,120 @@ function loadProfileDetails(username) {
                 <div id="profile-email">
                     <h4>${user.email}</h4>
                 </div>
-                <div id="profile-desc">
-                    <p>${user.desc}</p>
-                </div>
+                <div id="profile-desc"><p>${user.desc}</p></div>
             `;
             profileContainer.appendChild(profileDetails);
 
             if (user.name === currentUser) {
-                var editProfile = document.createElement('button');
-                editProfile.className = "edit-btn";
-                editProfile.textContent = "Edit Profile";
-                profileContainer.appendChild(editProfile);
+                var editProfileBtn = document.createElement('button');
+                editProfileBtn.className = "edit-btn";
+                editProfileBtn.textContent = "Edit Profile";
+                profileContainer.appendChild(editProfileBtn);
+                editProfileBtn.addEventListener('click', (event) => editProfile(event, user.name, user.desc, user.pic));
+            } else {
+                var followBtn = document.createElement('button');
+                if (user.followed === true) {
+                    followBtn.className = "unfollow-btn";
+                    followBtn.textContent = "Unfollow";
+                } else {
+                    followBtn.className = "follow-btn";
+                    followBtn.textContent = "Follow";
+                }
+                followBtn.addEventListener('click', (event) => followUser(event, username));
+                profileDetails.appendChild(followBtn);
             }
 
             profileView.appendChild(profileContainer);
         });
+
+    // SHOW POSTS FROM USER
+
 }
 
 
-function editProfile(username) {
-    var profileName, profileEmail, profileDesc, profileImg, editButton, profileDetails;
+function readURL(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+            document.querySelector('.profile-pic-big').src = e.target.result;
+        };
+
+        reader.readAsDataURL(input.files[0]);
+    }
+};
+
+
+function editProfile(event, username, desc, pic) {
+    var profileName, profileEmail, profileDesc, profileImg, imgPreview, editButton, profileDetails;
     profileName = document.querySelector('#profile-name');
     profileEmail = document.querySelector('#profile-email');
     profileDesc = document.querySelector('#profile-desc');
     profileImg = document.querySelector('#profile-img');
-    editButton = document.querySelector('.edit-btn');
+    imgPreview = document.querySelector('.profile-pic-big');
+    editButton = event.target;
     profileDetails = profileName.parentNode;
 
-    if (editButton.textContent === "Edit") {
-        editButton.textContent = "Hide";
+    if (editButton.textContent === "Edit Profile") {
+        editButton.textContent = "Cancel";
 
+        // Image upload and preview
+        const imgUpload = document.createElement('input');
+        imgUpload.type = "file";
+        imgUpload.style.margin = "auto";
+        imgUpload.style.width = "160px";
+        imgUpload.addEventListener('change', () => {
+            readURL(imgUpload);
+        });
+
+        profileImg.appendChild(imgUpload);
+
+        // Profile description textarea
+        const descInput = document.createElement('textarea');
+        descInput.textContent = desc;
+        descInput.placeholder = "Tell people who you are!";
+        descInput.rows = "3";
+        descInput.style.width = "100%";
+        descInput.style.padding = "10px";
+        profileDesc.replaceChild(descInput, profileDesc.childNodes[0]);
 
         // Confirm edit button
         const confirmButton = document.createElement('button');
         confirmButton.className = "confirm-btn";
-        confirmButton.textContent = "Edit";
+        confirmButton.textContent = "Make Changes";
+        profileDetails.appendChild(confirmButton);
 
-        // Delete post button
-        const deleteButton = document.createElement('button');
-        deleteButton.className = "delete-btn";
-        deleteButton.textContent = "Remove post";
+        confirmButton.addEventListener('click', () => {
+            fetch(`/api/profile/${username}`, {
+                    method: "POST",
+                    body: JSON.stringify({
+                        desc: descInput.value.trim(),
+                        img: imgPreview.src,
+                    })
+                })
+                .then(response => response.json())
+                .then(results => {
+                    console.log(results);
 
-        return
+                    // Reload the page
+                    location.reload();
+                })
+        });
+
     } else {
-        editButton.textContent = "Edit";
+        editButton.textContent = "Edit Profile";
 
+        // Remove img upload button
+        imgPreview.src = pic;
+        profileImg.removeChild(profileImg.lastChild);
+
+        // Return profile desc 
+        const descText = document.createElement('p');
+        descText.textContent = desc;
+        profileDesc.replaceChild(descText, profileDesc.childNodes[0]);
+
+        // Remove confirm button
+        profileDetails.removeChild(profileDetails.lastChild);
     }
 }
 
@@ -381,7 +452,6 @@ function editPost(id, text) {
                     textContainer.innerHTML = `
                     <p>${textArea.value.trim()}</p>
                     `;
-
                 })
         });
 

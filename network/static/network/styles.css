@@ -150,8 +150,9 @@ body {
     height: 250px;
 }
 
-.profile-img {
+#profile-img {
     display: flex;
+    flex-direction: column;
     position: relative;
     line-height: 100%;
     align-items: center;
@@ -161,6 +162,7 @@ body {
 }
 
 .profile-pic-big {
+    margin: auto;
     padding: 5px;
     border: 1px solid #fff;
     border-radius: 50%;

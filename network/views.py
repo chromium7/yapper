@@ -1,4 +1,6 @@
 import json
+import re
+import base64
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -8,6 +10,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
+from django.core.files.base import ContentFile
 
 from .models import User, Following, Post, Reply
 
@@ -16,12 +19,41 @@ def index(request):
     return render(request, "network/index.html")
 
 
+@csrf_exempt
 def profile(request, username):
     user = User.objects.get(username=username)
+    current_user = request.user
+
     if request.method == "POST":
-        return
+        # Update profile
+        data = json.loads(request.body)
+        desc = data.get("desc", "")
+        user.profile_desc = desc
+        user.save()
+
+        # IMAGE
+        dataUrlPattern = re.compile('data:image/(png|jpeg);base64,(.*)$')
+        img = data.get("img", "")
+        img = dataUrlPattern.match(img).group(2)
+        img = base64.b64decode(img)
+        file_data = ContentFile(img)
+
+        user.profile_pic.save(f"{username}-pic", file_data)
+
+        return JsonResponse({"message": "Profile successfully updated"}, status=201)
+
     elif request.method == "GET":
-        return JsonResponse(user.serialize(), safe=False)
+        # Get profile
+        if current_user == user:
+            response = user.serialize()
+        else:
+            if user in current_user.followings.all():
+                followed = True
+            else:
+                followed = False
+            response = user.serialize()
+            response['followed'] = followed
+        return JsonResponse(response, safe=False)
 
 
 def follow(request, category):

@@ -13,6 +13,8 @@ class User(AbstractUser):
             "email": self.email,
             "pic": str(self.profile_pic.url),
             "desc": self.profile_desc,
+            "followings": [user.username for user in self.followings.all()],
+            "followers": [user.username for user in self.followers.all()],
         }
 
 
