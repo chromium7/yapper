@@ -179,6 +179,21 @@ body {
     color: #fff;
 }
 
+#follow-count {
+    margin-bottom: 5px;
+}
+
+#followings-count,
+#followers-count {
+    margin-right: 10px;
+    font-weight: bold;
+    background-color: #fff;
+    color: #333;
+    border-radius: 15%;
+    padding: 4px;
+}
+
+
 /* PAGINATION */
 .pagination-container {
     margin-top: 10px;

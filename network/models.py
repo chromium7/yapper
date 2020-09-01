@@ -13,6 +13,8 @@ class User(AbstractUser):
             "email": self.email,
             "pic": str(self.profile_pic.url),
             "desc": self.profile_desc,
+            "followingCount": self.followings.count(),
+            "followerCount": self.followers.count()
         }
 
 

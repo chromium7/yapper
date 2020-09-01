@@ -48,15 +48,23 @@ def profile(request, username):
         if current_user == user:
             response = user.serialize()
         else:
-            followings = [user.follow for user in current_user.followings.all()]
-            
+            followings = [
+                user.follow for user in current_user.followings.all()]
+
             if user in followings:
                 followed = True
             else:
                 followed = False
             response = user.serialize()
             response['followed'] = followed
-        return JsonResponse(response, safe=False)
+
+        # Get user posts
+        posts = user.posts.all()
+        if posts:
+            posts = posts.order_by("-time")
+        posts = [post.serialize() for post in posts]
+
+        return JsonResponse([response, posts], safe=False)
 
     elif request.method == "PUT":
         # Follow user
@@ -83,6 +91,7 @@ def posts(request, category):
         posts = Post.objects.all()
 
     elif category == "feeds":
+        posts = []
         user_followings = current_user.followings.all()
         if user_followings:
             posts = Post.objects.filter(
@@ -90,6 +99,11 @@ def posts(request, category):
 
     elif category == "liked":
         posts = current_user.likes.all()
+
+    elif category.startswith("profile"):
+        username = category.split("_")[1]
+        user = User.objects.get(username=username)
+        posts = user.posts.all()
 
     if posts:
         posts = posts.order_by("-time")
@@ -99,6 +113,7 @@ def posts(request, category):
             previous = posts.has_previous()
             next = posts.has_next()
             return JsonResponse([[post.serialize() for post in posts], {"previous": previous, "next": next}], safe=False)
+
     return JsonResponse([post.serialize() for post in posts], safe=False)
 
 

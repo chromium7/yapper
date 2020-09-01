@@ -22,9 +22,8 @@ const paginatorCont = document.querySelector('#paginator-container');
 
 function loadPosts(category) {
     // Show correct the view
-    postView.style.display = "block";
-    profileView.style.display = "none";
-    followView.style.display = "none";
+    profileView.innerHTML = "";
+    followView.innerHTML = "";
     paginatorCont.innerHTML = "";
 
     var header;
@@ -52,70 +51,73 @@ function loadPosts(category) {
                 return
             };
 
-            // Pagination
-            var pagination = document.createElement('nav');
-            pagination.className = "pagination-container";
-            pagination.ariaLabel = "Posts navigation";
-            var paginationList = document.createElement('ul');
-            paginationList.className = "pagination justify-content-center";
-            var paginationPrevious = document.createElement('li');
-            paginationPrevious.id = "page-previous";
-            paginationPrevious.className = "page-item disabled";
-            paginationPrevious.innerHTML = `
-                <a class="page-link" href="#">Previous</a>
-            `;
-
-            pagination.appendChild(paginationList);
-            paginationList.appendChild(paginationPrevious);
-
-            // Available pages
-            var pageCount = 0;
-            for (var i = 0; i < posts.length; i = i + 10) {
-                pageCount++;
-                const paginationItem = document.createElement('li');
-                const page = pageCount;
-                paginationItem.className = "page-item";
-                paginationItem.innerHTML = `
-                    <a class="page-link" href="#">${pageCount}</a>
-                `;
-                paginationList.appendChild(paginationItem);
-                paginationItem.addEventListener('click', () => {
-                    showPaginatorPage(category, page);
-                    currentPage = page;
-                });
-            };
-
-            var paginationNext = document.createElement('li');
-            paginationNext.id = "page-next";
-            if (pageCount > 1) {
-                paginationNext.className = "page-item";
-            } else {
-                paginationNext.className = "page-item disabled";
-            };
-            paginationNext.innerHTML = `
-                <a class="page-link" href="#">Next</a>
-            `;
-            paginationList.appendChild(paginationNext);
+            pagination = createPagination(category, postView, posts);
 
             // Show first page by default
-            showPaginatorPage(category, 1);
+            showPaginatorPage(category, postView, 1);
 
             paginatorCont.appendChild(pagination);
         });
 }
 
+function createPagination(category, view, posts) {
+    // Pagination
+    var pagination = document.createElement('nav');
+    pagination.className = "pagination-container";
+    pagination.ariaLabel = "Posts navigation";
+    var paginationList = document.createElement('ul');
+    paginationList.className = "pagination justify-content-center";
+    var paginationPrevious = document.createElement('li');
+    paginationPrevious.id = "page-previous";
+    paginationPrevious.className = "page-item disabled";
+    paginationPrevious.innerHTML = `
+        <a class="page-link" href="#">Previous</a>
+    `;
+
+    pagination.appendChild(paginationList);
+    paginationList.appendChild(paginationPrevious);
+
+    // Available pages
+    var pageCount = 0;
+    for (var i = 0; i < posts.length; i = i + 10) {
+        pageCount++;
+        const paginationItem = document.createElement('li');
+        const page = pageCount;
+        paginationItem.className = "page-item";
+        paginationItem.innerHTML = `
+            <a class="page-link" href="#">${pageCount}</a>
+        `;
+        paginationList.appendChild(paginationItem);
+        paginationItem.addEventListener('click', () => {
+            showPaginatorPage(category, view, page);
+            currentPage = page;
+        });
+    };
+
+    var paginationNext = document.createElement('li');
+    paginationNext.id = "page-next";
+    if (pageCount > 1) {
+        paginationNext.className = "page-item";
+    } else {
+        paginationNext.className = "page-item disabled";
+    };
+    paginationNext.innerHTML = `
+        <a class="page-link" href="#">Next</a>
+    `;
+    paginationList.appendChild(paginationNext);
+    return pagination;
+}
+
 
 function loadFollow(category) {
-    postView.style.display = "none";
-    profileView.style.display = "none";
-    followView.style.display = "block";
+    postView.innerHTML = "";
+    profileView.innerHTML = "";
 }
 
 
 function loadProfileDetails(username) {
-    postView.style.display = "none";
-    profileView.style.display = "block";
-    followView.style.display = "none";
+    postView.innerHTML = "";
+    followView.innerHTML = "";
     paginatorCont.innerHTML = "";
 
     // Reset the profile view
@@ -123,8 +125,9 @@ function loadProfileDetails(username) {
 
     fetch(`/api/profile/${username}`)
         .then(response => response.json())
-        .then(user => {
-            // console.log(user);
+        .then(data => {
+            var posts = data[1];
+            var user = data[0];
 
             var profileContainer = document.createElement('div');
             profileContainer.className = "profile-container";
@@ -148,6 +151,10 @@ function loadProfileDetails(username) {
                     <h4>${user.email}</h4>
                 </div>
                 <div id="profile-desc"><p>${user.desc}</p></div>
+                <div id="follow-count">
+                    Followings <span id="followings-count">${user.followingCount}</span>
+                    Followers <span id="followers-count">${user.followerCount}</span>
+                </div>
             `;
             profileContainer.appendChild(profileDetails);
 
@@ -171,21 +178,42 @@ function loadProfileDetails(username) {
             }
 
             profileView.appendChild(profileContainer);
+
+            // Show user posts
+            var profilePostView = document.createElement('div');
+            profileView.append(profilePostView);
+
+            if (posts.length === 0) {
+                var empty = document.createElement('div');
+                empty.innerHTML = `
+                        <h2>Very empty :(</h2>
+                    `;
+                profileView.appendChild(empty);
+                return
+            };
+
+            pagination = createPagination(`profile_${username}_`, profilePostView, posts);
+
+            // Show first page by default
+            showPaginatorPage(`profile_${username}_`, profilePostView, 1);
+
+            paginatorCont.appendChild(pagination);
         });
-
-    // SHOW POSTS FROM USER
-
 }
 
 
 function followUser(event, username) {
     var followBtn = event.target;
+    var followerEle = document.querySelector('#followers-count');
+    var followerCount = parseInt(followerEle.textContent);
     if (followBtn.textContent === "Follow") {
         followBtn.textContent = "Unfollow";
         followBtn.className = "unfollow-btn";
+        followerEle.textContent = followerCount + 1;
     } else {
         followBtn.textContent = "Follow";
         followBtn.className = "follow-btn";
+        followerEle.textContent = followerCount - 1;
     }
     fetch(`/api/profile/${username}`, {
             method: "PUT",
@@ -195,7 +223,6 @@ function followUser(event, username) {
             console.log(results)
         })
 }
-
 
 
 function editProfile(event, username, desc, pic) {
@@ -226,7 +253,7 @@ function editProfile(event, username, desc, pic) {
         const descInput = document.createElement('textarea');
         descInput.textContent = desc;
         descInput.placeholder = "Tell people who you are!";
-        descInput.rows = "3";
+        descInput.rows = "2";
         descInput.style.width = "100%";
         descInput.style.padding = "10px";
         profileDesc.replaceChild(descInput, profileDesc.childNodes[0]);
@@ -272,15 +299,17 @@ function editProfile(event, username, desc, pic) {
 }
 
 
-function showPaginatorPage(category, page) {
+function showPaginatorPage(category, view, page) {
 
     var header;
     if (category === "all-posts") {
         header = 'All Posts';
     } else if (category === "feeds") {
         header = 'Feeds';
-    } else {
+    } else if (category === "liked") {
         header = 'Liked Posts';
+    } else if (category.startsWith('profile')) {
+        header = 'User Posts';
     }
 
     fetch(`api/posts/${category}?page=${page}`)
@@ -294,7 +323,7 @@ function showPaginatorPage(category, page) {
             var paginationPrevious = document.querySelector("#page-previous");
             if (status.next === true) {
                 paginationNext.className = "page-item";
-                paginationNext.addEventListener("click", () => showPaginatorPage(category, page + 1));
+                paginationNext.addEventListener("click", () => showPaginatorPage(category, view, page + 1));
             } else {
                 paginationNext.className = "page-item disabled";
                 // Remove event listener
@@ -304,7 +333,7 @@ function showPaginatorPage(category, page) {
 
             if (status.previous === true) {
                 paginationPrevious.className = "page-item";
-                paginationPrevious.addEventListener("click", () => showPaginatorPage(category, page - 1));
+                paginationPrevious.addEventListener("click", () => showPaginatorPage(category, view, page - 1));
             } else {
                 paginationPrevious.className = "page-item disabled";
                 // Remove event listener
@@ -312,8 +341,8 @@ function showPaginatorPage(category, page) {
                 paginationPrevious.parentNode.replaceChild(new_element, paginationPrevious);
             }
 
-            // Clear post view
-            postView.innerHTML = `<h2>${header}</h2>`;
+            // Clear view
+            view.innerHTML = `<h2>${header}</h2>`;
 
             // Create a post container for each post
             posts.forEach((post) => {
@@ -359,7 +388,7 @@ function showPaginatorPage(category, page) {
             </div>
             ${editButton}
         `;
-                postView.appendChild(postContainer);
+                view.appendChild(postContainer);
 
                 // Bind user profile link to username
                 var profile = document.querySelectorAll(`.${post.user}-profile`);
@@ -572,8 +601,14 @@ function openReplyContainer(id, category) {
                 .then(result => {
                     console.log(result);
 
-                    replyForm.remove()
-                    loadPosts(category);
+                    replyForm.remove();
+
+                    if (category.startsWith('profile')) {
+                        var user = category.split("_")[1];
+                        loadProfileDetails(user);
+                    } else {
+                        loadPosts(category);
+                    }
                 })
         } else {
             // Show alert if text is empty
