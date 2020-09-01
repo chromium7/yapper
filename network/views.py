@@ -11,6 +11,7 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
 from django.core.files.base import ContentFile
+from django.core.exceptions import ObjectDoesNotExist
 
 from .models import User, Following, Post, Reply
 
@@ -47,13 +48,26 @@ def profile(request, username):
         if current_user == user:
             response = user.serialize()
         else:
-            if user in current_user.followings.all():
+            followings = [user.follow for user in current_user.followings.all()]
+            
+            if user in followings:
                 followed = True
             else:
                 followed = False
             response = user.serialize()
             response['followed'] = followed
         return JsonResponse(response, safe=False)
+
+    elif request.method == "PUT":
+        # Follow user
+        try:
+            current_user.followings.get(follow=user).delete()
+            return JsonResponse({"message": "User unfollowed"}, status=201)
+
+        except ObjectDoesNotExist:
+            follow = Following(user=current_user, follow=user)
+            follow.save()
+            return JsonResponse({"message": "User followed"}, status=201)
 
 
 def follow(request, category):
@@ -69,11 +83,11 @@ def posts(request, category):
         posts = Post.objects.all()
 
     elif category == "feeds":
-        posts = []
         user_followings = current_user.followings.all()
         if user_followings:
-            for followed_user in user_followings:
-                posts += followed_user.posts
+            posts = Post.objects.filter(
+                user__in=user_followings.values('follow'))
+
     elif category == "liked":
         posts = current_user.likes.all()
 

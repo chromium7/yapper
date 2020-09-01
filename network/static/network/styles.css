@@ -83,7 +83,9 @@ body {
 .show-more-btn,
 .edit-btn,
 .confirm-btn,
-.delete-btn {
+.delete-btn,
+.follow-btn,
+.unfollow-btn {
     margin-right: 5px;
     background-color: #17a2b8;
     border: #17a2b8;
@@ -99,10 +101,10 @@ body {
     right: 10px;
 }
 
-.delete-btn {
+.delete-btn,
+.unfollow-btn {
     background-color: #df382c;
     border: #df382c;
-    margin-bottom: 3px;
 }
 
 .edit-area {

@@ -178,17 +178,24 @@ function loadProfileDetails(username) {
 }
 
 
-function readURL(input) {
-    if (input.files && input.files[0]) {
-        var reader = new FileReader();
-
-        reader.onload = function (e) {
-            document.querySelector('.profile-pic-big').src = e.target.result;
-        };
-
-        reader.readAsDataURL(input.files[0]);
+function followUser(event, username) {
+    var followBtn = event.target;
+    if (followBtn.textContent === "Follow") {
+        followBtn.textContent = "Unfollow";
+        followBtn.className = "unfollow-btn";
+    } else {
+        followBtn.textContent = "Follow";
+        followBtn.className = "follow-btn";
     }
-};
+    fetch(`/api/profile/${username}`, {
+            method: "PUT",
+        })
+        .then(response => response.json())
+        .then(results => {
+            console.log(results)
+        })
+}
+
 
 
 function editProfile(event, username, desc, pic) {
@@ -638,3 +645,16 @@ function openWriteContainer() {
         event.stopImmediatePropagation()
     })
 }
+
+
+function readURL(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+            document.querySelector('.profile-pic-big').src = e.target.result;
+        };
+
+        reader.readAsDataURL(input.files[0]);
+    }
+};
