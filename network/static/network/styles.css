@@ -152,7 +152,7 @@ body {
     height: 250px;
 }
 
-#profile-img {
+.profile-img {
     display: flex;
     flex-direction: column;
     position: relative;
@@ -179,12 +179,12 @@ body {
     color: #fff;
 }
 
-#follow-count {
+.follow-count {
     margin-bottom: 5px;
 }
 
-#followings-count,
-#followers-count {
+.followings-count,
+.followers-count {
     margin-right: 10px;
     font-weight: bold;
     background-color: #fff;

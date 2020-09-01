@@ -1,13 +1,16 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-    document.querySelector("#write-toggle").onclick = openWriteContainer;
     document.querySelector('.navbar-brand').addEventListener("click", () => loadPosts("all-posts"));
     document.querySelector("#all-posts").addEventListener("click", () => loadPosts("all-posts"));
-    document.querySelector("#feeds").addEventListener("click", () => loadPosts("feeds"));
-    document.querySelector("#followings").addEventListener("click", () => loadFollow("followings"));
-    document.querySelector("#followers").addEventListener("click", () => loadFollow("followers"));
-    document.querySelector("#liked-posts").addEventListener("click", () => loadPosts("liked"));
-    document.querySelector("#profile-details").addEventListener("click", () => loadProfileDetails(currentUser));
+    console.log(isAuthenticated);
+    if (isAuthenticated === "True") {
+        document.querySelector("#write-toggle").onclick = openWriteContainer;
+        document.querySelector("#feeds").addEventListener("click", () => loadPosts("feeds"));
+        document.querySelector("#followings").addEventListener("click", () => loadFollow("followings"));
+        document.querySelector("#followers").addEventListener("click", () => loadFollow("followers"));
+        document.querySelector("#liked-posts").addEventListener("click", () => loadPosts("liked"));
+        document.querySelector("#profile-details").addEventListener("click", () => loadProfileDetails(currentUser));
+    }
 
     // Load all posts as initial page
     loadPosts('all-posts');
@@ -59,6 +62,7 @@ function loadPosts(category) {
             paginatorCont.appendChild(pagination);
         });
 }
+
 
 function createPagination(category, view, posts) {
     // Pagination
@@ -112,6 +116,45 @@ function createPagination(category, view, posts) {
 function loadFollow(category) {
     postView.innerHTML = "";
     profileView.innerHTML = "";
+    paginatorCont.innerHTML = "";
+
+    var header;
+    if (category === "followings") {
+        header = "Followed Accounts";
+    } else {
+        header = "Followers";
+    }
+
+    followView.innerHTML = `<h2>${header}</h2>`;
+
+    fetch(`api/follow/${category}`)
+        .then(response => response.json())
+        .then(result => {
+            console.log(result);
+
+            result.forEach(account => {
+                var accContainer = document.createElement('div');
+                accContainer.className = "single-post-container";
+                accContainer.innerHTML = `
+                    <div class="profile-img">
+                        <img class="profile-pic-big" src="${account.pic}" />
+                    </div>
+                    <div>
+                        <h3 id="acc-${account.name}" class="user-header">${account.name}</h3>
+                        <p>${account.desc}</p>
+                        <div class="follow-count">
+                            Followings <span class="followings-count">${account.followingCount}</span>
+                            Followers <span class="followers-count">${account.followerCount}</span>
+                        </div>
+                    </div>
+                `;
+
+                followView.appendChild(accContainer);
+
+                document.querySelector(`#acc-${account.name}`).addEventListener('click', () => loadProfileDetails(account.name));
+
+            });
+        });
 }
 
 
@@ -135,7 +178,7 @@ function loadProfileDetails(username) {
             profileContainer.style.backgroundSize = '100% 100%';
 
             var profilePic = document.createElement('div');
-            profilePic.id = 'profile-img';
+            profilePic.className = 'profile-img';
             profilePic.innerHTML = `
                 <img src=${user.pic} class="profile-pic-big" />
             `;
@@ -151,9 +194,9 @@ function loadProfileDetails(username) {
                     <h4>${user.email}</h4>
                 </div>
                 <div id="profile-desc"><p>${user.desc}</p></div>
-                <div id="follow-count">
-                    Followings <span id="followings-count">${user.followingCount}</span>
-                    Followers <span id="followers-count">${user.followerCount}</span>
+                <div class="follow-count">
+                    Followings <span class="followings-count">${user.followingCount}</span>
+                    Followers <span class="followers-count">${user.followerCount}</span>
                 </div>
             `;
             profileContainer.appendChild(profileDetails);
@@ -204,7 +247,7 @@ function loadProfileDetails(username) {
 
 function followUser(event, username) {
     var followBtn = event.target;
-    var followerEle = document.querySelector('#followers-count');
+    var followerEle = document.querySelector('.followers-count');
     var followerCount = parseInt(followerEle.textContent);
     if (followBtn.textContent === "Follow") {
         followBtn.textContent = "Unfollow";
@@ -230,7 +273,7 @@ function editProfile(event, username, desc, pic) {
     profileName = document.querySelector('#profile-name');
     profileEmail = document.querySelector('#profile-email');
     profileDesc = document.querySelector('#profile-desc');
-    profileImg = document.querySelector('#profile-img');
+    profileImg = document.querySelector('.profile-img');
     imgPreview = document.querySelector('.profile-pic-big');
     editButton = event.target;
     profileDetails = profileName.parentNode;
@@ -366,6 +409,16 @@ function showPaginatorPage(category, view, page) {
                     editButton = "";
                 }
 
+                // Comment button if user is authenticated
+                var replyButton;
+
+                if (isAuthenticated === "True") {
+                    console.log('yes');
+                    replyButton = `<small class="reply-btn" id="reply-${post.id}">Comment</small>`;
+                } else {
+                    replyButton = ""
+                };
+
                 var postContainer = document.createElement('div');
                 postContainer.id = `container-${post.id}`;
                 postContainer.className = 'single-post-container';
@@ -373,7 +426,7 @@ function showPaginatorPage(category, view, page) {
             <div class="pic-container col-1">
                 <img class="user-pic" src="${post.pic}" alt="" />
             </div>
-            <div class="col-11">
+            <div class="col-11" id="text-container-${post.id}">
                 <h5 class="${post.user}-profile user-header">${post.user}</h5>
                 <div id="text-${post.id}">
                     <p>${post.text}</p>
@@ -383,9 +436,8 @@ function showPaginatorPage(category, view, page) {
                     d="M35,8c-4.176,0-7.851,2.136-10,5.373C22.851,10.136,19.176,8,15,8C8.373,8,3,13.373,3,20c0,14,16,21,22,26c6-5,22-12,22-26C47,13.373,41.627,8,35,8z"/>
                 </svg>
                 <small id="heart-count-${post.id}">${post.likes.length}</small>
-                <small class="reply-btn" id="reply-${post.id}">Comment</small>
-                <small class="post-time">${dateTime}</small>
-            </div>
+                ${replyButton}
+                <small class="post-time">${dateTime}</small></div>
             ${editButton}
         `;
                 view.appendChild(postContainer);
@@ -400,8 +452,11 @@ function showPaginatorPage(category, view, page) {
                 heart.addEventListener('click', event => heartPost(event, post.id));
 
                 // Bind reply button
-                var reply = document.querySelector(`#reply-${post.id}`);
-                reply.addEventListener('click', () => openReplyContainer(post.id, category));
+                if (document.querySelector(`#reply-${post.id}`)) {
+                    var reply = document.querySelector(`#reply-${post.id}`);
+                    reply.addEventListener('click', () => openReplyContainer(post.id, category));
+                }
+
 
                 // Bind edit button if exist
                 if (document.querySelector(`#edit-${post.id}`)) {
@@ -423,7 +478,8 @@ function showPaginatorPage(category, view, page) {
                         showComments.id = `show-more-${post.id}`;
                         showComments.className = 'show-more-btn';
                         showComments.textContent = 'Show comments';
-                        reply.parentNode.insertBefore(showComments, reply.nextSibling);
+                        var textContainer = document.querySelector(`#text-container-${post.id}`);
+                        textContainer.insertBefore(showComments, textContainer.lastChild);
 
                         // Bind functions
                         var replyContainer = document.createElement('div');

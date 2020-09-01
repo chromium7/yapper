@@ -79,7 +79,12 @@ def profile(request, username):
 
 
 def follow(request, category):
-    return
+    current_user = request.user
+    if category == "followings":
+        accounts = [user.user for user in current_user.followings.all()]
+    else:
+        accounts = [user.follow for user in current_user.followers.all()]
+    return JsonResponse([user.serialize() for user in accounts], safe=False)
 
 
 def posts(request, category):

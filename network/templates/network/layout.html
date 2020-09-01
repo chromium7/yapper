@@ -4,6 +4,8 @@
 <html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'network/bootstrap.css' %}">
     <link rel="stylesheet" href="{% static 'network/styles.css' %}">
@@ -81,6 +83,7 @@
 
     <script>
         var currentUser = "{{ user.username }}";
+        var isAuthenticated = "{{ user.is_authenticated }}";
         var profileBg = "{% static 'network/img/profile-bg.png' %}";
     </script>
     <script src="{% static 'network/script.js' %}"></script>
