@@ -23,6 +23,23 @@ const profileView = document.querySelector("#profile-view");
 const followView = document.querySelector("#follow-view");
 const paginatorCont = document.querySelector('#paginator-container');
 
+
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+
 function loadPosts(category) {
     // Show correct the view
     profileView.innerHTML = "";
@@ -260,6 +277,9 @@ function followUser(event, username) {
     }
     fetch(`/api/profile/${username}`, {
             method: "PUT",
+            headers: {
+                "X-CSRFToken": getCookie('csrftoken')
+            },
         })
         .then(response => response.json())
         .then(results => {
@@ -269,9 +289,8 @@ function followUser(event, username) {
 
 
 function editProfile(event, username, desc, pic) {
-    var profileName, profileEmail, profileDesc, profileImg, imgPreview, editButton, profileDetails;
+    var profileName, profileDesc, profileImg, imgPreview, editButton, profileDetails;
     profileName = document.querySelector('#profile-name');
-    profileEmail = document.querySelector('#profile-email');
     profileDesc = document.querySelector('#profile-desc');
     profileImg = document.querySelector('.profile-img');
     imgPreview = document.querySelector('.profile-pic-big');
@@ -313,7 +332,10 @@ function editProfile(event, username, desc, pic) {
                     body: JSON.stringify({
                         desc: descInput.value.trim(),
                         img: imgPreview.src,
-                    })
+                    }),
+                    headers: {
+                        "X-CSRFToken": getCookie('csrftoken')
+                    },
                 })
                 .then(response => response.json())
                 .then(results => {
@@ -534,7 +556,10 @@ function editPost(id, text) {
                     method: "POST",
                     body: JSON.stringify({
                         text: textArea.value.trim()
-                    })
+                    }),
+                    headers: {
+                        "X-CSRFToken": getCookie('csrftoken')
+                    },
                 })
                 .then(response => response.json())
                 .then(result => {
@@ -549,7 +574,10 @@ function editPost(id, text) {
 
         deleteButton.addEventListener('click', () => {
             fetch(`/api/edit/${id}`, {
-                    method: "PUT"
+                    method: "PUT",
+                    headers: {
+                        "X-CSRFToken": getCookie('csrftoken')
+                    },
                 })
                 .then(
                     textContainer.parentNode.parentNode.remove()
@@ -567,7 +595,10 @@ function editPost(id, text) {
 
 function heartPost(event, id) {
     fetch(`api/heart/${id}`, {
-            method: "PUT"
+            method: "PUT",
+            headers: {
+                "X-CSRFToken": getCookie('csrftoken')
+            },
         })
         .then(response => response.json())
         .then(result => {
@@ -651,7 +682,10 @@ function openReplyContainer(id, category) {
                     method: "POST",
                     body: JSON.stringify({
                         text: replyText.value.trim()
-                    })
+                    }),
+                    headers: {
+                        "X-CSRFToken": getCookie('csrftoken')
+                    },
                 })
                 .then(response => response.json())
                 .then(result => {
@@ -707,7 +741,10 @@ function openWriteContainer() {
                     method: 'POST',
                     body: JSON.stringify({
                         text: text.value.trim(),
-                    })
+                    }),
+                    headers: {
+                        "X-CSRFToken": getCookie('csrftoken')
+                    },
                 })
                 .then(response => response.json())
                 .then(result => {

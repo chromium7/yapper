@@ -7,10 +7,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'network/bootstrap.css' %}">
     <link rel="stylesheet" href="{% static 'network/login_styles.css' %}">
 </head>
 
 <body>
+    <div class="logo">
+        <img src="{% static 'network/img/logo-black.png' %}" alt="">
+    </div>
     <div class="log-container">
         {% block body %}
         {% endblock %}

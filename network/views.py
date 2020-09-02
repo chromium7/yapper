@@ -20,7 +20,6 @@ def index(request):
     return render(request, "network/index.html")
 
 
-@csrf_exempt
 def profile(request, username):
     user = User.objects.get(username=username)
     current_user = request.user
@@ -81,9 +80,9 @@ def profile(request, username):
 def follow(request, category):
     current_user = request.user
     if category == "followings":
-        accounts = [user.user for user in current_user.followings.all()]
+        accounts = [user.follow for user in current_user.followings.all()]
     else:
-        accounts = [user.follow for user in current_user.followers.all()]
+        accounts = [user.user for user in current_user.followers.all()]
     return JsonResponse([user.serialize() for user in accounts], safe=False)
 
 
@@ -122,7 +121,6 @@ def posts(request, category):
     return JsonResponse([post.serialize() for post in posts], safe=False)
 
 
-@csrf_exempt
 def heart(request, post_id):
 
     if request.method != "PUT":
@@ -140,7 +138,6 @@ def heart(request, post_id):
         return JsonResponse({"message": "liked", "count": len(post.like.all())}, status=201)
 
 
-@csrf_exempt
 def edit(request, post_id):
     post = Post.objects.get(pk=post_id)
 
@@ -159,7 +156,6 @@ def edit(request, post_id):
         return JsonResponse({"error": "POST request required"}, status=400)
 
 
-@csrf_exempt
 @login_required
 def write_post(request):
     if request.method != "POST":
@@ -176,7 +172,6 @@ def write_post(request):
     return JsonResponse({"message": "Created new Yappies successfully"}, status=201)
 
 
-@csrf_exempt
 def replies(request, post_id):
     post = Post.objects.get(id=post_id)
     if request.method == "POST":
